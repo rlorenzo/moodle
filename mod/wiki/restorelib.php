@@ -356,7 +356,7 @@
             foreach ($pages as $page) {
                 //Increment counter
                 $i++;
-                $content = $page->definition;
+                $content = $page->content;
                 $result = restore_decode_content_links_worker($content,$restore);
                 if ($result != $content) {
                     //Update record
