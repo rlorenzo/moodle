@@ -66,7 +66,7 @@ class mod_wiki_mod_form extends moodleform_mod {
         if (!empty($this->_instance)) {
             $attr['disabled'] = 'disabled';
         } else {
-            $attr['value'] = get_string('firstpagetitle', 'wiki');
+            $attr['value'] = '';
         }
 
         $mform->addElement('text', 'firstpagetitle', get_string('firstpagetitle', 'wiki'), $attr);
