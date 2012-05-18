@@ -18,18 +18,23 @@
     $marker      = optional_param('marker',-1 , PARAM_INT);
     $switchrole  = optional_param('switchrole',-1, PARAM_INT);
 
-    $params = array();
-    if (!empty($name)) {
-        $params = array('shortname' => $name);
-    } else if (!empty($idnumber)) {
-        $params = array('idnumber' => $idnumber);
-    } else if (!empty($id)) {
-        $params = array('id' => $id);
-    }else {
+    if (empty($id) && empty($name) && empty($idnumber)) {
         print_error('unspecifycourseid', 'error');
     }
 
-    $course = $DB->get_record('course', $params, '*', MUST_EXIST);
+    if (!empty($name)) {
+        if (! ($course = $DB->get_record('course', array('shortname'=>$name)))) {
+            print_error('invalidcoursenameshort', 'error');
+        }
+    } else if (!empty($idnumber)) {
+        if (! ($course = $DB->get_record('course', array('idnumber'=>$idnumber)))) {
+            print_error('invalidcourseid', 'error');
+        }
+    } else {
+        if (! ($course = $DB->get_record('course', array('id'=>$id)))) {
+            print_error('invalidcourseid', 'error');
+        }
+    }
 
     $urlparams = array('id' => $course->id);
     if ($section) {
@@ -39,7 +44,9 @@
     $PAGE->set_url('/course/view.php', $urlparams); // Defined here to avoid notices on errors etc
 
     preload_course_contexts($course->id);
-    $context = context_course::instance($course->id, MUST_EXIST);
+    if (!$context = get_context_instance(CONTEXT_COURSE, $course->id)) {
+        print_error('nocontext');
+    }
 
     // Remove any switched roles before checking login
     if ($switchrole == 0 && confirm_sesskey()) {
