@@ -34,7 +34,7 @@ $states = optional_param_array('states', array(), PARAM_ALPHA); // array of note
 $PAGE->set_url('/user/addnote.php', array('id'=>$id));
 
 if (! $course = $DB->get_record('course', array('id'=>$id))) {
-    print_error('invalidcourseid');
+    print_error('invalidcourseid', 'error', '', $id);
 }
 
 $context = get_context_instance(CONTEXT_COURSE, $id);

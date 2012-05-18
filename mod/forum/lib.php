@@ -4972,7 +4972,7 @@ function forum_user_can_post($forum, $discussion, $user=NULL, $cm=NULL, $course=
     if (!$course) {
         debugging('missing course', DEBUG_DEVELOPER);
         if (!$course = $DB->get_record('course', array('id' => $forum->course))) {
-            print_error('invalidcourseid');
+            print_error('invalidcourseid', 'error', '', $forum->course);
         }
     }
 

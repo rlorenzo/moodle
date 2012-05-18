@@ -44,7 +44,7 @@ if (!confirm_sesskey()) {
 }
 
 if (! ($course = $DB->get_record('course', array('id'=>$id)))) {
-    print_error('invalidcourseid', 'error');
+    print_error('invalidcourseid', 'error', '', $id);
 }
 
 if (!$context = get_context_instance(CONTEXT_COURSE, $course->id)) {

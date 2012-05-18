@@ -55,7 +55,7 @@ $strparticipants = get_string('participants');
 $systemcontext = get_context_instance(CONTEXT_SYSTEM);
 
 if (!$course = $DB->get_record('course', array('id'=>$id))) {
-    print_error('invalidcourseid');
+    print_error('invalidcourseid', 'error', '', $id);
 }
 
 // require proper login; guest user can not change password

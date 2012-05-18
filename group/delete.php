@@ -20,7 +20,7 @@ $PAGE->set_url('/group/delete.php', array('courseid'=>$courseid,'groups'=>$group
 
 // Make sure course is OK and user has access to manage groups
 if (!$course = $DB->get_record('course', array('id' => $courseid))) {
-    print_error('invalidcourseid');
+    print_error('invalidcourseid', 'error', '', $courseid);
 }
 require_login($course);
 $context = get_context_instance(CONTEXT_COURSE, $course->id);

@@ -75,7 +75,7 @@ if ($context->contextlevel == CONTEXT_COURSE) {
     $pagename = get_string("repositorycourse",'repository');
 
     if ( !$course = $DB->get_record('course', array('id'=>$context->instanceid))) {
-        print_error('invalidcourseid');
+        print_error('invalidcourseid', 'error', '', $context->instanceid);
     }
     require_login($course, false);
     // If the user is allowed to edit this course, he's allowed to edit list of repository instances
@@ -134,7 +134,7 @@ echo $OUTPUT->header();
 
 if ($context->contextlevel == CONTEXT_USER) {
     if ( !$course = $DB->get_record('course', array('id'=>$usercourseid))) {
-        print_error('invalidcourseid');
+        print_error('invalidcourseid', 'error', '', $usercourseid);
     }
 }
 

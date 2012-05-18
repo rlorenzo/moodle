@@ -25,7 +25,7 @@ if (!$chatuser = $DB->get_record('chat_users', array('sid'=>$chat_sid))) {
 
 //Get the minimal course
 if (!$course = $DB->get_record('course', array('id'=>$chatuser->course))) {
-    print_error('invalidcourseid');
+    print_error('invalidcourseid', 'error', '', $chatuser->course);
 }
 
 //Get the user theme and enough info to be used in chat_format_message() which passes it along to

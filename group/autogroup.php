@@ -20,7 +20,7 @@ $courseid = required_param('courseid', PARAM_INT);
 $PAGE->set_url('/group/autogroup.php', array('courseid' => $courseid));
 
 if (!$course = $DB->get_record('course', array('id'=>$courseid))) {
-    print_error('invalidcourseid');
+    print_error('invalidcourseid', 'error', '', $courseid);
 }
 
 // Make sure that the user has permissions to manage groups.

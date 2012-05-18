@@ -33,7 +33,7 @@ $id = required_param('id', PARAM_INT);   // course
 $PAGE->set_url('/mod/lesson/index.php', array('id'=>$id));
 
 if (!$course = $DB->get_record("course", array("id" => $id))) {
-    print_error('invalidcourseid');
+    print_error('invalidcourseid', 'error', '', $id);
 }
 
 require_login($course);

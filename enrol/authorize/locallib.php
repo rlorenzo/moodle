@@ -268,7 +268,7 @@ function authorize_print_order($orderid)
     }
 
     if (!$course = $DB->get_record('course', array('id'=>$order->courseid))) {
-        print_error('invalidcourseid', '', "$CFG->wwwroot/enrol/authorize/index.php");
+        print_error('invalidcourseid', 'error', "$CFG->wwwroot/enrol/authorize/index.php", $order->courseid);
     }
 
     if (!$user = $DB->get_record('user', array('id'=>$order->userid))) {

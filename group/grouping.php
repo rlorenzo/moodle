@@ -28,19 +28,19 @@ if ($id) {
     if (empty($courseid)) {
         $courseid = $grouping->courseid;
     } else if ($courseid != $grouping->courseid) {
-        print_error('invalidcourseid');
+        print_error('invalidcourseid', 'error', '', $courseid);
     } else {
         $url->param('courseid', $courseid);
     }
 
     if (!$course = $DB->get_record('course', array('id'=>$courseid))) {
-        print_error('invalidcourseid');
+        print_error('invalidcourseid', 'error', '', $courseid);
     }
 
 } else {
     $url->param('courseid', $courseid);
     if (!$course = $DB->get_record('course', array('id'=>$courseid))) {
-        print_error('invalidcourseid');
+        print_error('invalidcourseid', 'error', '', $courseid);
     }
     $grouping = new stdClass();
     $grouping->courseid = $course->id;

@@ -94,7 +94,7 @@ if ($courseid AND $courseid != SITEID) {
         require_course_login($course2); //this overwrites the object $course :-(
         $course = $DB->get_record("course", array("id"=>$cm->course)); // the workaround
     } else {
-        print_error('invalidcourseid');
+        print_error('invalidcourseid', 'error', '', $courseid);
     }
 }
 

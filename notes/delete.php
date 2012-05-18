@@ -15,7 +15,7 @@ if (!$note = note_load($noteid)) {
 
 // locate course information
 if (!$course = $DB->get_record('course', array('id'=>$note->courseid))) {
-    print_error('invalidcourseid');
+    print_error('invalidcourseid', 'notes', '', $note->courseid);
 }
 
 // locate user information

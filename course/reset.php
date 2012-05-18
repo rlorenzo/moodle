@@ -33,7 +33,7 @@ require_once('reset_form.php');
 $id = required_param('id', PARAM_INT);
 
 if (!$course = $DB->get_record('course', array('id'=>$id))) {
-    print_error("invalidcourseid");
+    print_error("invalidcourseid", 'error', '', $id);
 }
 
 $PAGE->set_url('/course/reset.php', array('id'=>$id));

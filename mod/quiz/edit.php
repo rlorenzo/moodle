@@ -152,7 +152,7 @@ if ($quiz_reordertool) {
 // Get the course object and related bits.
 $course = $DB->get_record('course', array('id' => $quiz->course));
 if (!$course) {
-    print_error('invalidcourseid', 'error');
+    print_error('invalidcourseid', 'error', '', $quiz->course);
 }
 
 $questionbank = new quiz_question_bank_view($contexts, $thispageurl, $course, $cm, $quiz);

@@ -38,7 +38,7 @@ if (!$chat = $DB->get_record('chat', array('id'=>$chatuser->chatid))) {
     throw new moodle_exception('invaliduserid', 'error');
 }
 if (!$course = $DB->get_record('course', array('id'=>$chat->course))) {
-    throw new moodle_exception('invalidcourseid', 'error');
+    throw new moodle_exception('invalidcourseid', 'error', '', $chat->course);
 }
 if (!$cm = get_coursemodule_from_instance('chat', $chat->id, $course->id)) {
     throw new moodle_exception('invalidcoursemodule', 'error');

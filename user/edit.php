@@ -39,7 +39,7 @@ $cancelemailchange = optional_param('cancelemailchange', 0, PARAM_INT);   // cou
 $PAGE->set_url('/user/edit.php', array('course'=>$course, 'id'=>$userid));
 
 if (!$course = $DB->get_record('course', array('id'=>$course))) {
-    print_error('invalidcourseid');
+    print_error('invalidcourseid', 'error', '', $course);
 }
 
 if ($course->id != SITEID) {

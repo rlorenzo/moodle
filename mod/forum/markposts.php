@@ -45,7 +45,7 @@ if (! $forum = $DB->get_record("forum", array("id" => $f))) {
 }
 
 if (! $course = $DB->get_record("course", array("id" => $forum->course))) {
-    print_error('invalidcourseid');
+    print_error('invalidcourseid', 'error', '', $forum->course);
 }
 
 if (!$cm = get_coursemodule_from_instance("forum", $forum->id, $course->id)) {

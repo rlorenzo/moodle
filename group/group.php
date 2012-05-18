@@ -33,16 +33,16 @@ if ($id) {
         $courseid = $group->courseid;
 
     } else if ($courseid != $group->courseid) {
-        print_error('invalidcourseid');
+        print_error('invalidcourseid', 'error', '', $courseid);
     }
 
     if (!$course = $DB->get_record('course', array('id'=>$courseid))) {
-        print_error('invalidcourseid');
+        print_error('invalidcourseid', 'error', '', $courseid);
     }
 
 } else {
     if (!$course = $DB->get_record('course', array('id'=>$courseid))) {
-        print_error('invalidcourseid');
+        print_error('invalidcourseid', 'error', '', $courseid);
     }
     $group = new stdClass();
     $group->courseid = $course->id;

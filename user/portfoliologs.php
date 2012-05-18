@@ -37,7 +37,7 @@ $page     = optional_param('page', 0, PARAM_INT);
 $perpage  = optional_param('perpage', 10, PARAM_INT);
 
 if (! $course = $DB->get_record("course", array("id"=>$courseid))) {
-    print_error('invalidcourseid');
+    print_error('invalidcourseid', 'error', '', $courseid);
 }
 
 require_login($course, false);

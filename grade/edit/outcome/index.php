@@ -79,7 +79,7 @@ switch ($action) {
         if (empty($outcome->courseid)) {
             require_capability('moodle/grade:manage', get_context_instance(CONTEXT_SYSTEM));
         } else if ($outcome->courseid != $courseid) {
-            print_error('invalidcourseid');
+            print_error('invalidcourseid', 'error', '', $courseid);
         }
 
         if (!$outcome->can_delete()) {

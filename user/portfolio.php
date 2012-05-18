@@ -42,7 +42,7 @@ if ($config !== 0) {
     $url->param('config', $config);
 }
 if (! $course = $DB->get_record("course", array("id"=>$courseid))) {
-    print_error('invalidcourseid');
+    print_error('invalidcourseid', 'error', '', $courseid);
 }
 
 $user = $USER;

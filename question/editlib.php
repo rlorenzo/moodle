@@ -1721,7 +1721,7 @@ function require_login_in_context($contextorid = null){
     } else if ($context && ($context->contextlevel == CONTEXT_MODULE)) {
         if ($cm = $DB->get_record('course_modules',array('id' =>$context->instanceid))) {
             if (!$course = $DB->get_record('course', array('id' => $cm->course))) {
-                print_error('invalidcourseid');
+                print_error('invalidcourseid', 'error', '', $cm->course);
             }
             require_course_login($course, true, $cm);
 

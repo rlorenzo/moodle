@@ -32,7 +32,7 @@ $searchcontent = optional_param('searchwikicontent', 0, PARAM_INT);
 $cmid = optional_param('cmid', 0, PARAM_INT);
 
 if (!$course = $DB->get_record('course', array('id' => $courseid))) {
-    print_error('invalidcourseid');
+    print_error('invalidcourseid', 'error', '', $courseid);
 }
 if (!$cm = get_coursemodule_from_id('wiki', $cmid)) {
     print_error('invalidcoursemodule');
