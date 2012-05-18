@@ -28,11 +28,11 @@
         }
     } else if (!empty($idnumber)) {
         if (! ($course = $DB->get_record('course', array('idnumber'=>$idnumber)))) {
-            print_error('invalidcourseid', 'error');
+            print_error('invalidcourseid', 'error', '', $idnumber);
         }
     } else {
         if (! ($course = $DB->get_record('course', array('id'=>$id)))) {
-            print_error('invalidcourseid', 'error');
+            print_error('invalidcourseid', 'error', '', $id);
         }
     }
 
