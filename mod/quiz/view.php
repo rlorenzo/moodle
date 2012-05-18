@@ -45,7 +45,7 @@ if ($id) {
         print_error('invalidquizid', 'quiz');
     }
     if (!$course = $DB->get_record('course', array('id' => $quiz->course))) {
-        print_error('invalidcourseid');
+        print_error('invalidcourseid', 'error', '', $quiz->course);
     }
     if (!$cm = get_coursemodule_from_instance("quiz", $quiz->id, $course->id)) {
         print_error('invalidcoursemodule');

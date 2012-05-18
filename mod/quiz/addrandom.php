@@ -42,7 +42,7 @@ $scrollpos = optional_param('scrollpos', 0, PARAM_INT);
 
 // Get the course object and related bits.
 if (!$course = $DB->get_record('course', array('id' => $quiz->course))) {
-    print_error('invalidcourseid');
+    print_error('invalidcourseid', 'error', '', $quiz->course);
 }
 // You need mod/quiz:manage in addition to question capabilities to access this page.
 // You also need the moodle/question:useall capability somewhere.

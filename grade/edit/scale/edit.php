@@ -47,7 +47,7 @@ if ($id) {
     if ($scale_rec->courseid) {
         $scale_rec->standard = 0;
         if (!$course = $DB->get_record('course', array('id' => $scale_rec->courseid))) {
-            print_error('invalidcourseid');
+            print_error('invalidcourseid', 'error', '', $scale_rec->courseid);
         }
         require_login($course);
         $context = get_context_instance(CONTEXT_COURSE, $course->id);
@@ -56,7 +56,7 @@ if ($id) {
     } else {
         if ($courseid) {
             if (!$course = $DB->get_record('course', array('id' => $courseid))) {
-                print_error('invalidcourseid');
+                print_error('invalidcourseid', 'error', '', $courseid);
             }
         }
         $scale_rec->standard = 1;

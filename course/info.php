@@ -18,7 +18,7 @@
         }
     } else {
         if (!$course = $DB->get_record("course", array("id"=>$id))) {
-            print_error("invalidcourseid");
+            print_error('invalidcourseid', 'error', '', $courseid);
         }
     }
 

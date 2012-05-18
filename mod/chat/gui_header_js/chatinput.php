@@ -16,7 +16,7 @@ if (!$chat = $DB->get_record('chat', array('id'=>$chatid))) {
 }
 
 if (!$course = $DB->get_record('course', array('id'=>$chat->course))) {
-    print_error('invalidcourseid');
+    print_error('invalidcourseid', 'error', '', $chat->course);
 }
 
 if (!$cm = get_coursemodule_from_instance('chat', $chat->id, $course->id)) {

@@ -74,7 +74,7 @@ if (!isloggedin() or isguestuser()) {
         }
     }
     if (! $course = $DB->get_record('course', array('id' => $forum->course))) {
-        print_error('invalidcourseid');
+        print_error('invalidcourseid', 'error', '', $forum->course);
     }
 
     if (!$cm = get_coursemodule_from_instance('forum', $forum->id, $course->id)) { // For the logs
@@ -101,7 +101,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
         print_error('invalidforumid', 'forum');
     }
     if (! $course = $DB->get_record("course", array("id" => $forum->course))) {
-        print_error('invalidcourseid');
+        print_error('invalidcourseid', 'error', '', $forum->course);
     }
     if (! $cm = get_coursemodule_from_instance("forum", $forum->id, $course->id)) {
         print_error("invalidcoursemodule");
@@ -166,7 +166,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
         print_error('invalidforumid', 'forum');
     }
     if (! $course = $DB->get_record("course", array("id" => $discussion->course))) {
-        print_error('invalidcourseid');
+        print_error('invalidcourseid', 'error', '', $discussion->course);
     }
     if (! $cm = get_coursemodule_from_instance("forum", $forum->id, $course->id)) {
         print_error('invalidcoursemodule');
@@ -247,7 +247,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
         print_error('invalidforumid', 'forum');
     }
     if (! $course = $DB->get_record("course", array("id" => $discussion->course))) {
-        print_error('invalidcourseid');
+        print_error('invalidcourseid', 'error', '', $discussion->course);
     }
     if (!$cm = get_coursemodule_from_instance("forum", $forum->id, $course->id)) {
         print_error('invalidcoursemodule');
@@ -295,7 +295,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
         print_error('invalidcoursemodule');
     }
     if (!$course = $DB->get_record('course', array('id' => $forum->course))) {
-        print_error('invalidcourseid');
+        print_error('invalidcourseid', 'error', '', $forum->course);
     }
 
     require_login($course, false, $cm);

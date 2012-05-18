@@ -38,7 +38,7 @@ $PAGE->set_url($url);
 
 if ($id) {
     if (! $course = $DB->get_record('course', array('id' => $id))) {
-        print_error('invalidcourseid');
+        print_error('invalidcourseid', 'error', '', $id);
     }
 } else {
     $course = get_site();

@@ -47,8 +47,8 @@ if ($mode == STATS_MODE_RANKED) {
     redirect($CFG->wwwroot.'/report/stats/index.php?time='.$time);
 }
 
-if (!$course = $DB->get_record("course", array("id"=>$courseid))) {
-    print_error("invalidcourseid");
+if (!$course = $DB->get_record('course', array('id'=>$courseid))) {
+    print_error('invalidcourseid', 'error', '', $courseid);
 }
 
 if (!empty($userid)) {

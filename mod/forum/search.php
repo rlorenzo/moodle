@@ -107,7 +107,7 @@ if ($search) {
 }
 
 if (!$course = $DB->get_record('course', array('id'=>$id))) {
-    print_error('invalidcourseid');
+    print_error('invalidcourseid', 'error', '', $id);
 }
 
 require_course_login($course);

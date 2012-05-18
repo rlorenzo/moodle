@@ -118,7 +118,7 @@ if ((empty($courseid) ? true : $courseid == SITEID) && empty($userid)) {
 
 if (!empty($courseid)) {
     if (!$course = $DB->get_record('course', array('id'=>$courseid))) {
-        print_error('invalidcourseid');
+        print_error('invalidcourseid', 'error', '', $id);
     }
 
     $courseid = $course->id;
@@ -143,7 +143,7 @@ if (!empty($groupid)) {
     }
 
     if (!$course = $DB->get_record('course', array('id'=>$group->courseid))) {
-        print_error(get_string('invalidcourseid', 'blog'));
+        print_error(get_string('invalidcourseid', 'error', $group->courseid));
     }
 
     $coursecontext = get_context_instance(CONTEXT_COURSE, $course->id);

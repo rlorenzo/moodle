@@ -30,7 +30,7 @@ require_once("locallib.php");
 $id = required_param('id', PARAM_INT);
 $PAGE->set_url('/mod/quiz/index.php', array('id'=>$id));
 if (!$course = $DB->get_record('course', array('id' => $id))) {
-    print_error('invalidcourseid');
+    print_error('invalidcourseid', 'error', '', $id);
 }
 $coursecontext = get_context_instance(CONTEXT_COURSE, $id);
 require_login($course);

@@ -71,7 +71,7 @@ $user_context = get_context_instance(CONTEXT_USER, $USER->id);
 
 $PAGE->set_context($user_context);
 if (!$course = $DB->get_record('course', array('id'=>$courseid))) {
-    print_error('invalidcourseid');
+    print_error('invalidcourseid', 'error', '', $courseid);
 }
 $PAGE->set_course($course);
 

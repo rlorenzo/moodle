@@ -23,7 +23,7 @@ $PAGE->set_url('/mod/scorm/index.php', array('id'=>$id));
 
 if (!empty($id)) {
     if (!$course = $DB->get_record('course', array('id'=>$id))) {
-        print_error('invalidcourseid');
+        print_error('invalidcourseid', 'error', '', $id);
     }
 } else {
     print_error('missingparameter');

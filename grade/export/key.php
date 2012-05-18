@@ -42,16 +42,16 @@ if ($id) {
         $courseid = $key->instance;
 
     } else if ($courseid != $key->instance) {
-        print_error('invalidcourseid');
+        print_error('invalidcourseid', 'error', '', $courseid);
     }
 
     if (!$course = $DB->get_record('course', array('id'=>$courseid))) {
-        print_error('invalidcourseid');
+        print_error('invalidcourseid', 'error', '', $courseid);
     }
 
 } else {
     if (!$course = $DB->get_record('course', array('id'=>$courseid))) {
-        print_error('invalidcourseid');
+        print_error('invalidcourseid', 'error', '', $courseid);
     }
     $key = new stdClass();
 }

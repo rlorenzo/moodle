@@ -37,7 +37,7 @@ if (!empty($id)) {
         print_error('invalidid', 'glossary');
     }
     if (! $course = $DB->get_record("course", array("id"=>$glossary->course))) {
-        print_error('invalidcourseid');
+        print_error('invalidcourseid', 'error', '', $glossary->course);
     }
     if (!$cm = get_coursemodule_from_instance("glossary", $glossary->id, $course->id)) {
         print_error('invalidcoursemodule');

@@ -32,7 +32,7 @@ define('COMPLETION_REPORT_PAGE', 25);
 $id = required_param('course',PARAM_INT);
 $course = $DB->get_record('course',array('id'=>$id));
 if (!$course) {
-    print_error('invalidcourseid');
+    print_error('invalidcourseid', 'error', '', $id);
 }
 $context = context_course::instance($course->id);
 
