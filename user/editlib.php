@@ -258,6 +258,7 @@ function useredit_shared_definition(&$mform, $editoroptions = null) {
 
     /// Moodle optional fields
     $mform->addElement('header', 'moodle_optional', get_string('optional', 'form'));
+    $mform->setAdvanced('moodle_optional');
 
     $mform->addElement('text', 'url', get_string('webpage'), 'maxlength="255" size="50"');
     $mform->setType('url', PARAM_URL);
