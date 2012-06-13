@@ -116,22 +116,24 @@ if ($PAGE->user_allowed_editing()) {
         }
     }
 
-    // Add button for editing page
-    $params = array('edit' => !$edit);
+    // Add button for editing page, only if users have ability to edit My Moodle
+    if (empty($CFG->forcedefaultmymoodle)) {        
+        $params = array('edit' => !$edit);
 
-    if (!$currentpage->userid) {
-        // viewing a system page -- let the user customise it
-        $editstring = get_string('updatemymoodleon');
-        $params['edit'] = 1;
-    } else if (empty($edit)) {
-        $editstring = get_string('updatemymoodleon');
-    } else {
-        $editstring = get_string('updatemymoodleoff');
+        if (!$currentpage->userid) {
+            // viewing a system page -- let the user customise it
+            $editstring = get_string('updatemymoodleon');
+            $params['edit'] = 1;
+        } else if (empty($edit)) {
+            $editstring = get_string('updatemymoodleon');
+        } else {
+            $editstring = get_string('updatemymoodleoff');
+        }
+
+        $url = new moodle_url("$CFG->wwwroot/my/index.php", $params);
+        $button = $OUTPUT->single_button($url, $editstring);
+        $PAGE->set_button($button);
     }
-
-    $url = new moodle_url("$CFG->wwwroot/my/index.php", $params);
-    $button = $OUTPUT->single_button($url, $editstring);
-    $PAGE->set_button($button);
 
 } else {
     $USER->editing = $edit = 0;
