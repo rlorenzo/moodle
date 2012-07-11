@@ -1329,9 +1329,22 @@ class restore_course_structure_step extends restore_structure_step {
             $data->theme = '';
         }
 
+        // make sure that format exists
+        $formats = get_plugin_list('format');
+        if (!array_key_exists($data->format, $formats)){
+            // format not found, so use site default            
+            $data->format = get_config('moodlecourse', 'format');
+        }
+                
         // Course record ready, update it
         $DB->update_record('course', $data);
 
+        // make sure that format's default blocks are added
+        blocks_add_default_course_blocks($data);        
+        
+        // notify others that restore occurred
+        events_trigger('course_restored', $data);  
+        
         // Role name aliases
         restore_dbops::set_course_role_names($this->get_restoreid(), $this->get_courseid());
     }
