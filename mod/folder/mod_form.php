@@ -45,11 +45,14 @@ class mod_folder_mod_form extends moodleform_mod {
         }
         $mform->addRule('name', null, 'required', null, 'client');
         $this->add_intro_editor($config->requiremodintro);
-
+        
         //-------------------------------------------------------
         $mform->addElement('header', 'content', get_string('contentheader', 'folder'));
         $mform->addElement('filemanager', 'files', get_string('files'), null, array('subdirs'=>1, 'accepted_types'=>'*'));
 
+        // Adding option to show folders expanded or collapsed by default
+        $mform->addElement('advcheckbox', 'show_expanded', get_string('show_expanded', 'folder'));
+        $mform->setDefault('show_expanded', $config->show_expanded);
         //-------------------------------------------------------
         $this->standard_coursemodule_elements();
 
