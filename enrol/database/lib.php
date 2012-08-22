@@ -27,6 +27,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once($CFG->libdir .'/gradelib.php');
+
 /**
  * Database enrolment plugin implementation.
  * @author  Petr Skoda - based on code by Martin Dougiamas, Martin Langhoff and others
@@ -212,6 +214,9 @@ class enrol_database_plugin extends enrol_plugin {
             } else {
                 $roleid = reset($roles);
                 $this->enrol_user($instance, $user->id, $roleid, 0, 0, ENROL_USER_ACTIVE);
+                if ($CFG->recovergradesdefault) {
+                    grade_recover_history_grades($user->id, $instance->courseid);
+                }       
             }
 
             if (!$context = get_context_instance(CONTEXT_COURSE, $instance->courseid)) {
@@ -497,6 +502,12 @@ class enrol_database_plugin extends enrol_plugin {
                         if ($verbose) {
                             mtrace("  enrolling: $userid ==> $course->shortname as ".$allroles[$roleid]->shortname);
                         }
+                        if ($CFG->recovergradesdefault) {                            
+                            $recovered_grades = grade_recover_history_grades($userid, $course->id);
+                            if ($recovered_grades && $verbose) {
+                                mtrace("  recovered grades: $userid ==> $course->shortname");
+                            }
+                        }                        
                     }
                 }
 
