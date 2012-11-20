@@ -309,6 +309,7 @@ $string['roledefinitions'] = 'Role definitions';
 $string['rolefullname'] = 'Role name';
 $string['roleincontext'] = '{$a->role} in {$a->context}';
 $string['role:manage'] = 'Create and manage roles';
+$string['role:otherusers'] = 'Review users who have a role in course but not enrolled';
 $string['role:override'] = 'Override permissions for others';
 $string['role:review'] = 'Review permissions for others';
 $string['roleprohibitheader'] = 'Prohibit role';

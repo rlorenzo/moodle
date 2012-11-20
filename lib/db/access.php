@@ -665,6 +665,18 @@ $capabilities = array(
         )
     ),
 
+    'moodle/role:otherusers' => array(
+
+        'riskbitmask' => RISK_PERSONAL,
+
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_COURSE,
+        'archetypes' => array(
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW
+        )
+    ),
+
     // Create, update and delete course categories. (Deleting a course category
     // does not let you delete the courses it contains, unless you also have
     // moodle/course: delete.) Creating and deleting requires this permission in
