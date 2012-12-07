@@ -1024,7 +1024,8 @@ class cm_info extends stdClass  {
     public function is_user_access_restricted_by_group() {
         global $CFG;
 
-        if (!empty($CFG->enablegroupmembersonly) and !empty($this->groupmembersonly)) {
+        if (!empty($CFG->enablegroupmembersonly) and !empty($this->groupingid)
+                and !empty($this->groupmembersonly)) {
             $modcontext = context_module::instance($this->id);
             $userid = $this->modinfo->get_user_id();
             if (!has_capability('moodle/site:accessallgroups', $modcontext, $userid)) {
