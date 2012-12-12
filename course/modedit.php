@@ -293,7 +293,8 @@ if ($mform->is_cancelled()) {
         $fromform->groupingid = 0;
     }
 
-    if (!isset($fromform->groupmembersonly)) {
+    // do not allow groupmembersonly flag to be set if no grouping is set
+    if (!isset($fromform->groupmembersonly) || empty($fromform->groupingid)) {
         $fromform->groupmembersonly = 0;
     }
 
