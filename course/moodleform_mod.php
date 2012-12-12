@@ -179,16 +179,17 @@ abstract class moodleform_mod extends moodleform {
         if (empty($this->_cm) || !$this->_cm->groupingid) {
             if ($mform->elementExists('groupmode') and !$mform->elementExists('groupmembersonly') and empty($COURSE->groupmodeforce)) {
                 $mform->disabledIf('groupingid', 'groupmode', 'eq', NOGROUPS);
-
-            } else if (!$mform->elementExists('groupmode') and $mform->elementExists('groupmembersonly')) {
-                $mform->disabledIf('groupingid', 'groupmembersonly', 'notchecked');
-
             } else if (!$mform->elementExists('groupmode') and !$mform->elementExists('groupmembersonly')) {
                 // groupings have no use without groupmode or groupmembersonly
                 if ($mform->elementExists('groupingid')) {
                     $mform->removeElement('groupingid');
                 }
             }
+        }
+
+        // disable groupmembersonly checkbox if "None" grouping is choosen
+        if ($CFG->enablegroupmembersonly) {
+            $mform->disabledIf('groupmembersonly', 'groupingid', 'eq', 0);
         }
 
         // Completion: If necessary, freeze fields
