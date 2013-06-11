@@ -29,6 +29,8 @@ require_once $CFG->dirroot.'/grade/report/grader/lib.php';
 
 $courseid      = required_param('id', PARAM_INT);        // course id
 $page          = optional_param('page', 0, PARAM_INT);   // active page
+$silast        = optional_param('silast', 'all', PARAM_ALPHAEXT);   // Surname Initial
+$filast        = optional_param('filast', 'all', PARAM_ALPHAEXT);   //  first name Initial
 $edit          = optional_param('edit', -1, PARAM_BOOL); // sticky editting mode
 
 $sortitemid    = optional_param('sortitemid', 0, PARAM_ALPHANUM); // sort by which grade item
@@ -52,7 +54,7 @@ require_capability('gradereport/grader:view', $context);
 require_capability('moodle/grade:viewall', $context);
 
 /// return tracking object
-$gpr = new grade_plugin_return(array('type'=>'report', 'plugin'=>'grader', 'courseid'=>$courseid, 'page'=>$page));
+$gpr = new grade_plugin_return(array('type'=>'report', 'plugin'=>'grader', 'courseid'=>$courseid, 'page'=>$page, 'silast'=>$silast, 'filast'=>$filast));
 
 /// last selected report session tracking
 if (!isset($USER->grade_last_report)) {
@@ -139,6 +141,8 @@ $numusers = $report->get_numusers();
 $report->load_final_grades();
 
 echo $report->group_selector;
+echo $report->get_first_initial_bar();
+echo $report->get_last_initial_bar();
 echo '<div class="clearer"></div>';
 
 //show warnings if any
@@ -158,10 +162,13 @@ $reporthtml = $report->get_grade_table();
 if ($USER->gradeediting[$course->id] && ($report->get_pref('showquickfeedback') || $report->get_pref('quickgrading'))) {
     echo '<form action="index.php" method="post">';
     echo '<div>';
+    echo '<div class="submit"><input type="submit" value="'.s(get_string('update')).'" /></div>';
     echo '<input type="hidden" value="'.s($courseid).'" name="id" />';
     echo '<input type="hidden" value="'.sesskey().'" name="sesskey" />';
     echo '<input type="hidden" value="grader" name="report"/>';
     echo '<input type="hidden" value="'.$page.'" name="page"/>';
+    echo '<input type="hidden" value="'.$silast.'" name="silast"/>';
+    echo '<input type="hidden" value="'.$filast.'" name="filast"/>';
     echo $reporthtml;
     echo '<div class="submit"><input type="submit" id="gradersubmit" value="'.s(get_string('update')).'" /></div>';
     echo '</div></form>';

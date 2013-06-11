@@ -41,6 +41,12 @@ class edit_item_form extends moodleform {
 /// visible elements
         $mform->addElement('header', 'general', get_string('gradeitem', 'grades'));
 
+        if (grade_anonymous::is_supported($COURSE)) {
+            $mform->addElement(
+                'checkbox', 'anonymous', get_string('anonymousitem', 'grades')
+            );
+        }
+
         $mform->addElement('text', 'itemname', get_string('itemname', 'grades'));
         $mform->setType('itemname', PARAM_TEXT);
         $mform->addElement('text', 'iteminfo', get_string('iteminfo', 'grades'));
@@ -51,7 +57,7 @@ class edit_item_form extends moodleform {
         $mform->addHelpButton('idnumber', 'idnumbermod');
         $mform->setType('idnumber', PARAM_RAW);
 
-        $options = array(GRADE_TYPE_NONE=>get_string('typenone', 'grades'),
+        $options = array(//GRADE_TYPE_NONE=>get_string('typenone', 'grades'),
                          GRADE_TYPE_VALUE=>get_string('typevalue', 'grades'),
                          GRADE_TYPE_SCALE=>get_string('typescale', 'grades'),
                          GRADE_TYPE_TEXT=>get_string('typetext', 'grades'));
@@ -101,8 +107,26 @@ class edit_item_form extends moodleform {
         $mform->disabledIf('gradepass', 'gradetype', 'eq', GRADE_TYPE_TEXT);
         $mform->setType('gradepass', PARAM_RAW);
 
-        $mform->addElement('text', 'multfactor', get_string('multfactor', 'grades'));
-        $mform->addHelpButton('multfactor', 'multfactor', 'grades');
+        if (get_config('moodle', 'grade_multfactor_alt')) {
+            $curve_to = get_string('multfactor_alt', 'grades');
+            $perform_curve = get_string('allow_multfactor_alt', 'grades');
+
+            $mform->addElement('checkbox', 'curve_to', $perform_curve,'');
+
+            $mform->setAdvanced('curve_to');
+
+            $mform->addElement('text', 'multfactor', $curve_to);
+
+            $mform->disabledIf('curve_to', 'gradetype', 'eq', GRADE_TYPE_NONE);
+            $mform->disabledIf('curve_to', 'gradetype', 'eq', GRADE_TYPE_TEXT);
+
+            $mform->disabledIf('multfactor', 'curve_to', 'notchecked');
+            $mform->addHelpButton('multfactor', 'multfactor_alt', 'grades', null);
+        } else {
+            $mform->addElement('text', 'multfactor', get_string('multfactor', 'grades'));
+            $mform->addHelpButton('multfactor', 'multfactor', 'grades');
+        }
+
         $mform->setAdvanced('multfactor');
         $mform->disabledIf('multfactor', 'gradetype', 'eq', GRADE_TYPE_NONE);
         $mform->disabledIf('multfactor', 'gradetype', 'eq', GRADE_TYPE_TEXT);
@@ -225,11 +249,27 @@ class edit_item_form extends moodleform {
         $mform =& $this->_form;
 
         if ($id = $mform->getElementValue('id')) {
+
+            if ($mform->elementExists('anonymous')) {
+                $anon = grade_anonymous::fetch(array('itemid' => $id));
+
+                if ($anon) {
+                    $mform->setDefault('anonymous', 1);
+                    $mform->hardFreeze('anonymous');
+                } else {
+                    $mform->removeElement('anonymous');
+                }
+            }
+
             $grade_item = grade_item::fetch(array('id'=>$id));
 
             if (!$grade_item->is_raw_used()) {
                 $mform->removeElement('plusfactor');
                 $mform->removeElement('multfactor');
+
+                if ($mform->elementExists('curve_to')) {
+                    $mform->removeElement('curve_to');
+                }
             }
 
             if ($grade_item->is_outcome_item()) {
@@ -303,16 +343,17 @@ class edit_item_form extends moodleform {
                     }
                 }
             }
-
-        } else {
-            // all new items are manual, children of course category
-            $mform->removeElement('plusfactor');
-            $mform->removeElement('multfactor');
         }
 
         // no parent header for course category
         if (!$mform->elementExists('aggregationcoef') and !$mform->elementExists('parentcategory')) {
             $mform->removeElement('headerparent');
+        }
+
+        // Freeze grademin element if option unavailable
+        $min_is_hidden = (bool) get_config('moodle', 'grade_min_hide');
+        if ($min_is_hidden and $mform->elementExists('grademin')) {
+            $mform->hardFreeze('grademin');
         }
     }
 

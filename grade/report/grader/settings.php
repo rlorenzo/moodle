@@ -38,8 +38,17 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configcheckbox('grade_report_showonlyactiveenrol', get_string('showonlyactiveenrol', 'grades'),
                                                 get_string('showonlyactiveenrol_help', 'grades'), 1));
 
+    $settings->add(new admin_setting_configtext('grade_report_repeatheaders', get_string('repeatheaders', 'grades'),
+                                            get_string('repeatheaders_help', 'grades'), 10));
+
     $settings->add(new admin_setting_configcheckbox('grade_report_quickgrading', get_string('quickgrading', 'grades'),
                                                 get_string('quickgrading_help', 'grades'), 1));
+
+    $settings->add(new admin_setting_configcheckbox(
+        'grade_report_integrate_quick_edit',
+        get_string('quick_edit', 'gradereport_grader'),
+        get_string('quick_edit_desc', 'gradereport_grader'), 0
+    ));
 
     $settings->add(new admin_setting_configcheckbox('grade_report_showquickfeedback', get_string('quickfeedback', 'grades'),
                                                 get_string('showquickfeedback_help', 'grades'), 0));
@@ -72,6 +81,9 @@ if ($ADMIN->fulltree) {
 
     $settings->add(new admin_setting_configcheckbox('grade_report_showanalysisicon', get_string('showanalysisicon', 'core_grades'),
                                                 get_string('showanalysisicon_desc', 'core_grades'), 1));
+
+    $settings->add(new admin_setting_configcheckbox('grade_report_showweightedpercents', get_string('showweightedpercents', 'grades'),
+        get_string('showweightedpercents_help', 'grades'), 0));
 
     $settings->add(new admin_setting_configcheckbox('grade_report_showuserimage', get_string('showuserimage', 'grades'),
                                                 get_string('showuserimage_help', 'grades'), 1));

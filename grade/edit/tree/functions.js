@@ -79,6 +79,19 @@ Y.YUI2.namespace('grade_edit_tree');
     var Event = Y.YUI2.util.Event;
     var gretree = Y.YUI2.grade_edit_tree;
 
+    var curving = Dom.getElementsByClassName('curving', 'input');
+    var changer = function(index, maxgrade) {
+        return function() { curving[index].value = maxgrade.value; };
+    };
+
+    for (var j = 0; j < curving.length; j ++) {
+        var id = curving[j].name.split('_')[1];
+        var maxgrade = Dom.get('grademax' + id);
+        if (maxgrade) {
+            maxgrade.onkeyup = changer(j, maxgrade);
+        }
+    }
+
     gretree.DDApp = {
 
         init: function() {

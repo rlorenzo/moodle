@@ -93,6 +93,7 @@ class grader_report_preferences_form extends moodleform {
         // quickgrading and showquickfeedback are conditional on grade:edit capability
         if (has_capability('moodle/grade:edit', $context)) {
             $preferences['prefgeneral']['quickgrading'] = $checkbox_default;
+            $preferences['prefgeneral']['integrate_quick_edit'] = $checkbox_default;
             $preferences['prefgeneral']['showquickfeedback'] = $checkbox_default;
         }
 
@@ -102,6 +103,7 @@ class grader_report_preferences_form extends moodleform {
             if (has_capability('moodle/course:viewsuspendedusers', $context)) {
                 $preferences['prefgeneral']['showonlyactiveenrol'] = $checkbox_default;
             }
+            $preferences['prefgeneral']['repeatheaders'] = 'text';
             $preferences['prefgeneral']['aggregationposition'] = array(GRADE_REPORT_PREFERENCE_DEFAULT => '*default*',
                                                                        GRADE_REPORT_AGGREGATION_POSITION_FIRST => get_string('positionfirst', 'grades'),
                                                                        GRADE_REPORT_AGGREGATION_POSITION_LAST => get_string('positionlast', 'grades'));
@@ -111,6 +113,7 @@ class grader_report_preferences_form extends moodleform {
             $preferences['prefshow']['showactivityicons'] = $checkbox_default;
             $preferences['prefshow']['showranges'] = $checkbox_default;
             $preferences['prefshow']['showanalysisicon'] = $checkbox_default;
+            $preferences['prefshow']['showweightedpercents'] = $checkbox_default;
 
             if ($canviewhidden) {
                 $preferences['prefrows']['shownumberofgrades'] = $checkbox_default;
@@ -169,10 +172,14 @@ class grader_report_preferences_form extends moodleform {
                     $options[GRADE_REPORT_PREFERENCE_DEFAULT] = get_string('reportdefault', 'grades', $default);
                 }
 
-                $label = get_string($lang_string, 'grades') . $number;
+                if ($lang_string == 'integrate_quick_edit') {
+                    $label = get_string('quick_edit', 'gradereport_grader');
+                } else {
+                    $label = get_string($lang_string, 'grades') . $number;
+                }
 
                 $mform->addElement($type, $full_pref, $label, $options);
-                if ($lang_string != 'showuserimage') {
+                if ($lang_string != 'showuserimage' and $lang_string != 'integrate_quick_edit') {
                     $mform->addHelpButton($full_pref, $lang_string, 'grades');
                 }
                 $mform->setDefault($full_pref, $pref_value);

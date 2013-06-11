@@ -86,19 +86,13 @@ class edit_category_form extends moodleform {
             $mform->setAdvanced('aggregatesubcats');
         }
 
-        $options = array(0 => get_string('none'));
-
-        for ($i=1; $i<=20; $i++) {
-            $options[$i] = $i;
-        }
-
-        $mform->addElement('select', 'keephigh', get_string('keephigh', 'grades'), $options);
+        $mform->addElement('text', 'keephigh', get_string('keephigh', 'grades'), 0);
         $mform->addHelpButton('keephigh', 'keephigh', 'grades');
         if ((int)$CFG->grade_keephigh_flag & 2) {
             $mform->setAdvanced('keephigh');
         }
 
-        $mform->addElement('select', 'droplow', get_string('droplow', 'grades'), $options);
+        $mform->addElement('text', 'droplow', get_string('droplow', 'grades'), 0);
         $mform->addHelpButton('droplow', 'droplow', 'grades');
         $mform->disabledIf('droplow', 'keephigh', 'noteq', 0);
         if ((int)$CFG->grade_droplow_flag & 2) {
@@ -177,6 +171,39 @@ class edit_category_form extends moodleform {
         $mform->addHelpButton('grade_item_gradepass', 'gradepass', 'grades');
         $mform->disabledIf('grade_item_gradepass', 'grade_item_gradetype', 'eq', GRADE_TYPE_NONE);
         $mform->disabledIf('grade_item_gradepass', 'grade_item_gradetype', 'eq', GRADE_TYPE_TEXT);
+
+        if (get_config('moodle', 'grade_multfactor_alt')) {
+            $curve_to = get_string('multfactor_alt', 'grades');
+            $perform_curve = get_string('allow_multfactor_alt', 'grades');
+
+            $mform->addElement('checkbox', 'curve_to', $perform_curve,'');
+
+            $mform->setAdvanced('curve_to');
+
+            $mform->addElement('text', 'grade_item_multfactor', $curve_to);
+
+            $mform->disabledIf('curve_to', 'gradetype', 'eq', GRADE_TYPE_NONE);
+            $mform->disabledIf('curve_to', 'gradetype', 'eq', GRADE_TYPE_TEXT);
+
+            $mform->disabledIf('grade_item_multfactor', 'curve_to', 'notchecked');
+            $mform->addHelpButton(
+                'grade_item_multfactor', 'multfactor_alt',
+                'grades', null
+            );
+        } else {
+            $mform->addElement('text', 'grade_item_multfactor', get_string('multfactor', 'grades'));
+            $mform->addHelpButton('grade_item_multfactor', 'grade_item_multfactor', 'grades');
+        }
+
+        $mform->setAdvanced('grade_item_multfactor');
+        $mform->disabledIf('grade_item_multfactor', 'gradetype', 'eq', GRADE_TYPE_NONE);
+        $mform->disabledIf('grade_item_multfactor', 'gradetype', 'eq', GRADE_TYPE_TEXT);
+
+        $mform->addElement('text', 'grade_item_plusfactor', get_string('plusfactor', 'grades'));
+        $mform->addHelpButton('grade_item_plusfactor', 'plusfactor', 'grades');
+        $mform->setAdvanced('grade_item_plusfactor');
+        $mform->disabledIf('grade_item_plusfactor', 'gradetype', 'eq', GRADE_TYPE_NONE);
+        $mform->disabledIf('grade_item_plusfactor', 'gradetype', 'eq', GRADE_TYPE_TEXT);
 
         /// grade display prefs
         $default_gradedisplaytype = grade_get_setting($COURSE->id, 'displaytype', $CFG->grade_displaytype);
@@ -361,12 +388,18 @@ class edit_category_form extends moodleform {
                 unset($mform->_rules['fullname']);
                 $key = array_search('fullname', $mform->_required);
                 unset($mform->_required[$key]);
+
+                $editable = (bool) get_config('moodle', 'grade_coursecateditable');
+
+                // If it is a course category and its fullname is ?, show an empty field
+                if ($editable && $mform->getElementValue('fullname') == '?') {
+                    $mform->setDefault('fullname', '');
+                } else if (!$editable) {
+                    $mform->setDefault('fullname', $COURSE->fullname);
+                    $mform->hardFreeze('fullname');
+                }
             }
 
-            // If it is a course category and its fullname is ?, show an empty field
-            if ($grade_category->is_course_category() && $mform->getElementValue('fullname') == '?') {
-                $mform->setDefault('fullname', '');
-            }
             // remove unwanted aggregation options
             if ($mform->elementExists('aggregation')) {
                 $allaggoptions = array_keys($this->aggregation_options);

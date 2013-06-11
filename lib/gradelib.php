@@ -32,6 +32,7 @@ require_once($CFG->libdir . '/grade/grade_item.php');
 require_once($CFG->libdir . '/grade/grade_grade.php');
 require_once($CFG->libdir . '/grade/grade_scale.php');
 require_once($CFG->libdir . '/grade/grade_outcome.php');
+require_once($CFG->libdir . '/grade/grade_anonymous.php');
 
 /////////////////////////////////////////////////////////////////////
 ///// Start of public API for communication with modules/blocks /////
@@ -676,7 +677,7 @@ function grade_format_gradevalue($value, &$grade_item, $localized=true, $display
             return grade_format_gradevalue_percentage($value, $grade_item, $decimals, $localized);
 
         case GRADE_DISPLAY_TYPE_LETTER:
-            return grade_format_gradevalue_letter($value, $grade_item);
+            return grade_format_gradevalue_letter($value, $grade_item, $decimals, $localized);
 
         case GRADE_DISPLAY_TYPE_REAL_PERCENTAGE:
             return grade_format_gradevalue_real($value, $grade_item, $decimals, $localized) . ' (' .
@@ -684,23 +685,23 @@ function grade_format_gradevalue($value, &$grade_item, $localized=true, $display
 
         case GRADE_DISPLAY_TYPE_REAL_LETTER:
             return grade_format_gradevalue_real($value, $grade_item, $decimals, $localized) . ' (' .
-                    grade_format_gradevalue_letter($value, $grade_item) . ')';
+                    grade_format_gradevalue_letter($value, $grade_item, $decimals, $localized) . ')';
 
         case GRADE_DISPLAY_TYPE_PERCENTAGE_REAL:
             return grade_format_gradevalue_percentage($value, $grade_item, $decimals, $localized) . ' (' .
                     grade_format_gradevalue_real($value, $grade_item, $decimals, $localized) . ')';
 
         case GRADE_DISPLAY_TYPE_LETTER_REAL:
-            return grade_format_gradevalue_letter($value, $grade_item) . ' (' .
+            return grade_format_gradevalue_letter($value, $grade_item, $decimals, $localized) . ' (' .
                     grade_format_gradevalue_real($value, $grade_item, $decimals, $localized) . ')';
 
         case GRADE_DISPLAY_TYPE_LETTER_PERCENTAGE:
-            return grade_format_gradevalue_letter($value, $grade_item) . ' (' .
+            return grade_format_gradevalue_letter($value, $grade_item, $decimals, $localized) . ' (' .
                     grade_format_gradevalue_percentage($value, $grade_item, $decimals, $localized) . ')';
 
         case GRADE_DISPLAY_TYPE_PERCENTAGE_LETTER:
             return grade_format_gradevalue_percentage($value, $grade_item, $decimals, $localized) . ' (' .
-                    grade_format_gradevalue_letter($value, $grade_item) . ')';
+                    grade_format_gradevalue_letter($value, $grade_item, $decimals, $localized) . ')';
         default:
             return '';
     }
@@ -757,7 +758,7 @@ function grade_format_gradevalue_percentage($value, $grade_item, $decimals, $loc
  * @param object $grade_item Grade item object
  * @return string
  */
-function grade_format_gradevalue_letter($value, $grade_item) {
+function grade_format_gradevalue_letter($value, $grade_item, $decimals, $localized) {
     $context = context_course::instance($grade_item->courseid, IGNORE_MISSING);
     if (!$letters = grade_get_letters($context)) {
         return ''; // no letters??
@@ -769,6 +770,7 @@ function grade_format_gradevalue_letter($value, $grade_item) {
 
     $value = grade_grade::standardise_score($value, $grade_item->grademin, $grade_item->grademax, 0, 100);
     $value = bounded_number(0, $value, 100); // just in case
+    $value = format_float($value, $decimals, $localized);
     foreach ($letters as $boundary => $letter) {
         if ($value >= $boundary) {
             return format_string($letter);
@@ -1364,16 +1366,49 @@ function grade_cron() {
         $grade_grade->update('locktime');
     }
     $rs->close();
-
-    //TODO: do not run this cleanup every cron invocation
-    // cleanup history tables
-    if (!empty($CFG->gradehistorylifetime)) {  // value in days
-        $histlifetime = $now - ($CFG->gradehistorylifetime * 3600 * 24);
-        $tables = array('grade_outcomes_history', 'grade_categories_history', 'grade_items_history', 'grade_grades_history', 'scale_history');
-        foreach ($tables as $table) {
-            if ($DB->delete_records_select($table, "timemodified < ?", array($histlifetime))) {
+    
+    // cleanup history tables occaisionally
+    if (!isset($CFG->gradehistorylifetime)) {  // value in days; we cannot choose a default for this
+        mtrace(sprintf("\n  [WARNING] No value set for '%s'...skipping grade history pruning.\n"
+                ,get_string('gradehistorylifetime', 'grades')
+                ));        
+        
+    }elseif($CFG->gradehistorylifetime == 0){
+        mtrace(sprintf("\n  [INFO] Config '%s' is set to '%s'...skipping grade history pruning.\n", 
+                get_string('gradehistorylifetime', 'grades'),
+                get_string('neverdeletehistory', 'grades')
+                ));        
+    }else{  //we can proceed
+        require_once($CFG->dirroot.'/lib/statslib.php');
+        mtrace(sprintf("  Grade history retention policy '%s' is set to %s days\n  Checking for appropriate time"
+                , get_string('gradehistorylifetime', 'grades')
+                , $CFG->gradehistorylifetime
+                ));
+        
+        //use default values quietly, if user has not set them in admin/server/cleanup
+        //@todo should we explicitly complain and tell the user that they have not set something? even though
+        //this condition SHOULD get caught when they try to run without having set a value for 'gradehistorylifetime'
+        $starthour = isset($CFG->gradehistorylifetimestarthour)   ? $CFG->gradehistorylifetimestarthour   : 10; 
+        $startmin  = isset($CFG->gradehistorylifetimestartminute) ? $CFG->gradehistorylifetimestartminute : 0;
+        
+        //setup time interval for cleanup to occur
+        $check_window_start = stats_get_base_daily() + $starthour*60*60 + $startmin*60;
+        $check_window_end = $check_window_start + 3600;
+        
+        if ((time() > $check_window_start) && (time() < $check_window_end)) {
+            mtrace("  Begin grade history logs pruning");
+            
+            $histlifetime = $now - ($CFG->gradehistorylifetime * 3600 * 24);
+            $tables = array('grade_outcomes_history', 'grade_categories_history', 'grade_items_history', 'grade_grades_history', 'scale_history');
+            
+            foreach ($tables as $table) {
+                $DB->delete_records_select($table, "timemodified < ?", array($histlifetime));
                 mtrace("    Deleted old grade history records from '$table'");
             }
+            mtrace("  Finished pruning grades history");
+        }else{
+            mtrace(sprintf("  NOT within the designated window for pruning grade history {%s - %s}...skipping.", 
+                    strftime('%l:%M %P', $check_window_start), strftime('%l:%M %P', $check_window_end)));
         }
     }
 }

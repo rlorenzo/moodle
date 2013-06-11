@@ -226,6 +226,8 @@ if ($current_view != '') {
 //Ideally we could do the updates through $grade_edit_tree to avoid recreating it
 $recreatetree = false;
 
+$curve_to = get_config('moodle', 'grade_multfactor_alt');
+
 if ($data = data_submitted() and confirm_sesskey()) {
     // Perform bulk actions first
     if (!empty($data->bulkmove)) {
@@ -269,10 +271,15 @@ if ($data = data_submitted() and confirm_sesskey()) {
 
             $grade_item = grade_item::fetch(array('id'=>$aid, 'courseid'=>$courseid));
 
+            if ($param === 'multfactor' and $curve_to) {
+                $value = $value / $grade_item->grademax;
+            }
+
             if ($param === 'grademax' and $value < $grade_item->grademin) {
                 // better not allow values lower than grade min
                 $value = $grade_item->grademin;
             }
+
             $grade_item->$param = $value;
 
             $grade_item->update();
@@ -286,7 +293,29 @@ if ($data = data_submitted() and confirm_sesskey()) {
             $value = clean_param($value, PARAM_BOOL);
 
             $grade_item = grade_item::fetch(array('id'=>$aid, 'courseid'=>$courseid));
-            $grade_item->aggregationcoef = $value;
+
+            // Weighted Mean special case
+            $parent = $grade_item->load_parent_category();
+
+            // Make sure about category item's parent category
+            if ($grade_item->itemtype == 'category') {
+                $parent = $parent->load_parent_category();
+            }
+
+            if ($parent->aggregation == GRADE_AGGREGATE_WEIGHTED_MEAN) {
+                $oldcoef = $grade_item->aggregationcoef;
+
+                // Retain original aggregationcoef if extra credit checked
+                if ($oldcoef < 0 and !$value) {
+                    $grade_item->aggregationcoef = $oldcoef * -1;
+                } else if ($oldcoef == 0 and $value) {
+                    $grade_item->aggregationcoef = -1;
+                } else {
+                    $grade_item->aggregationcoef = $value ? abs($oldcoef) * -1 : $oldcoef;
+                }
+            } else {
+                $grade_item->aggregationcoef = $value;
+            }
 
             $grade_item->update();
             grade_regrade_final_grades($courseid);

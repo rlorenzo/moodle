@@ -344,6 +344,9 @@ class grade_item extends grade_object {
      * @return bool success
      */
     public function delete($source=null) {
+        if ($anon = grade_anonymous::fetch(array('itemid' => $this->id))) {
+            $anon->delete($source);
+        }
         $this->delete_all_grades($source);
         return parent::delete($source);
     }
@@ -674,10 +677,6 @@ class grade_item extends grade_object {
                 return "Could not aggregate final grades for category:".$this->id; // TODO: improve and localize
             }
 
-        } else if ($this->is_manual_item()) {
-            // manual items track only final grades, no raw grades
-            return true;
-
         } else if (!$this->is_raw_used()) {
             // hmm - raw grades are not used- nothing to regrade
             return true;
@@ -700,6 +699,16 @@ class grade_item extends grade_object {
                 if (!empty($grade_record->locked) or !empty($grade_record->overridden)) {
                     // this grade is locked - final grade must be ok
                     continue;
+                }
+
+                // Manual item rawgrade might be recomputed
+                if ($this->is_manual_item() and $CFG->grade_item_manual_recompute) {
+                    $maxscale = ($this->grademax / $grade->rawgrademax);
+                    $grade->rawgrademax = $this->grademax;
+                    $grade->rawgrademin = $this->grademin;
+                    // $recompute = $grade->rawgrade * $maxscale;
+                    // Apply bounds just in case
+                    $grade->rawgrade = $this->bounded_grade($grade->rawgrade);
                 }
 
                 $grade->finalgrade = $this->adjust_raw_grade($grade->rawgrade, $grade->rawgrademin, $grade->rawgrademax);
@@ -949,7 +958,13 @@ class grade_item extends grade_object {
      * @return bool
      */
     public function is_overridable_item() {
-        return !$this->is_outcome_item() and ($this->is_external_item() or $this->is_calculated() or $this->is_course_item() or $this->is_category_item());
+        if ($this->is_course_item() or $this->is_category_item()) {
+            $overridable = (bool) get_config('moodle', 'grade_overridecat');
+        } else {
+            $overridable = false;
+        }
+
+        return !$this->is_outcome_item() and ($this->is_external_item() or $this->is_calculated() or $overridable);
     }
 
     /**
@@ -967,7 +982,8 @@ class grade_item extends grade_object {
      * @return bool
      */
     public function is_raw_used() {
-        return ($this->is_external_item() and !$this->is_calculated() and !$this->is_outcome_item());
+        $category_item = ($this->is_category_item() or $this->is_course_item());
+        return ($this->is_manual_item() or $this->is_external_item() or $category_item and !$this->is_calculated() and !$this->is_outcome_item());
     }
 
     /**
@@ -1283,7 +1299,7 @@ class grade_item extends grade_object {
      * @return mixed float or int fixed grade value
      */
     public function bounded_grade($gradevalue) {
-        global $CFG;
+        global $CFG, $course;
 
         if (is_null($gradevalue)) {
             return null;
@@ -1300,14 +1316,16 @@ class grade_item extends grade_object {
         // NOTE: if you change this value you must manually reset the needsupdate flag in all grade items
         $maxcoef = isset($CFG->gradeoverhundredprocentmax) ? $CFG->gradeoverhundredprocentmax : 10; // 1000% max by default
 
-        if (!empty($CFG->unlimitedgrades)) {
-            // NOTE: if you change this value you must manually reset the needsupdate flag in all grade items
-            $grademax = $grademax * $maxcoef;
-        } else if ($this->is_category_item() or $this->is_course_item()) {
-            $category = $this->load_item_category();
-            if ($category->aggregation >= 100) {
-                // grade >100% hack
+        if (!grade_anonymous::is_supported($course)) {
+            if (!empty($CFG->unlimitedgrades)) {
+                // NOTE: if you change this value you must manually reset the needsupdate flag in all grade items
                 $grademax = $grademax * $maxcoef;
+            } else if ($this->is_category_item() or $this->is_course_item()) {
+                $category = $this->load_item_category();
+                if ($category->aggregation >= 100) {
+                    // grade >100% hack
+                    $grademax = $grademax * $maxcoef;
+                }
             }
         }
 
@@ -1495,6 +1513,14 @@ class grade_item extends grade_object {
             // do not update grades that should be already locked, force regrade instead
             $this->force_regrading();
             return false;
+        }
+
+        // Manual Item raw-grade support
+        if ($this->is_manual_item()) {
+            return $this->update_raw_grade(
+                $userid, $finalgrade, $source, $feedback, $feedbackformat,
+                $usermodified, null, null, $grade
+            );
         }
 
         $oldgrade = new stdClass();

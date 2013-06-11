@@ -23,6 +23,50 @@ if (has_capability('moodle/grade:manage', $systemcontext)
     $temp = new admin_settingpage('gradessettings', new lang_string('generalsettings', 'grades'), 'moodle/grade:manage');
     if ($ADMIN->fulltree) {
 
+        $temp->add(new admin_setting_heading('grade_anonymous_header',
+            get_string('anonymousgrading', 'grades'), ''));
+
+        $temp->add(new admin_setting_configcheckbox('grade_anonymous_grading',
+            get_string('anonymousgrading', 'grades'),
+            get_string('anonymousgrading_help', 'grades'), 0));
+
+        $course_cats = $DB->get_records_menu(
+            'course_categories', null, 'name ASC', 'id, name'
+        );
+
+        $temp->add(new admin_setting_configmultiselect('grade_anonymous_cats',
+            get_string('anonymouscategories', 'grades'),
+            get_string('anonymouscategories_help', 'grades'),
+            array(), $course_cats));
+
+        $fields = $DB->get_records_menu(
+            'user_info_field', null, 'name ASC', 'id, name'
+        );
+
+        $url = new moodle_url('/user/profile/index.php', array(
+            'id' => 0,
+            'action' => 'editfield',
+            'datatype' => 'text'
+        ));
+
+        if (!empty($fields)) {
+            $temp->add(new admin_setting_configselect('grade_anonymous_field',
+                get_string('anonymousfield', 'grades'),
+                get_string('anonymousfield_help', 'grades', $url->out()),
+                current(array_keys($fields)), $fields));
+        } else {
+            $temp->add(new admin_setting_heading('grade_anonymous_field',
+                get_string('anonymousfield', 'grades'),
+                get_string('anonymousfield_help', 'grades', $url->out())));
+        }
+
+        $temp->add(new admin_setting_configtext('grade_anonymous_adjusts',
+            get_string('anonymousadjusts', 'grades'),
+            get_string('anonymousadjusts_help', 'grades'), '0.0'));
+
+        $temp->add(new admin_setting_heading('grade_general_settings',
+            get_string('generalsettings', 'grades'), ''));
+
         // new CFG variable for gradebook (what roles to display)
         $temp->add(new admin_setting_special_gradebookroles());
 
@@ -73,6 +117,8 @@ if (has_capability('moodle/grade:manage', $systemcontext)
     /// Grade category settings
     $temp = new admin_settingpage('gradecategorysettings', new lang_string('gradecategorysettings', 'grades'), 'moodle/grade:manage');
     if ($ADMIN->fulltree) {
+        $temp->add(new admin_setting_configcheckbox('grade_coursecateditable', new lang_string('coursecateditable', 'grades'), new lang_string('coursecateditable_help', 'grades'), 1));
+
         $temp->add(new admin_setting_configcheckbox('grade_hideforcedsettings', new lang_string('hideforcedsettings', 'grades'), new lang_string('hideforcedsettings_help', 'grades'), '1'));
 
         $strnoforce = new lang_string('noforce', 'grades');
@@ -97,8 +143,13 @@ if (has_capability('moodle/grade:manage', $systemcontext)
 
         $temp->add(new admin_setting_configmultiselect('grade_aggregations_visible', new lang_string('aggregationsvisible', 'grades'),
                                                        new lang_string('aggregationsvisiblehelp', 'grades'), $defaultvisible, $options));
+        // SWM Extra Credit handling
+        $temp->add(new admin_setting_configcheckbox('grade_swm_extra_credit', new lang_string('swm_ec', 'grades'), new lang_string('swm_ec_help', 'grades'), '1'));
 
         $options = array(0 => new lang_string('no'), 1 => new lang_string('yes'));
+
+        $temp->add(new admin_setting_configcheckbox('grade_overridecat', new lang_string('overridecat', 'grades'),
+            new lang_string('overridecat_help', 'grades'), 1));
 
         $defaults = array('value'=>1, 'forced'=>false, 'adv'=>true);
         $temp->add(new admin_setting_gradecat_combo('grade_aggregateonlygraded', new lang_string('aggregateonlygraded', 'grades'),
@@ -121,6 +172,11 @@ if (has_capability('moodle/grade:manage', $systemcontext)
         $defaults['forced'] = false;
         $temp->add(new admin_setting_gradecat_combo('grade_droplow', new lang_string('droplow', 'grades'),
                     new lang_string('droplow_help', 'grades'), $defaults, $options));
+
+        $temp->add(new admin_setting_configcheckbox('grade_droplow_limit',
+            new lang_string('droplow_limit', 'grades'),
+            new lang_string('droplow_limit_help', 'grades'), 0)
+        );
     }
     $ADMIN->add('grades', $temp);
 
@@ -128,6 +184,14 @@ if (has_capability('moodle/grade:manage', $systemcontext)
     /// Grade item settings
     $temp = new admin_settingpage('gradeitemsettings', new lang_string('gradeitemsettings', 'grades'), 'moodle/grade:manage');
     if ($ADMIN->fulltree) {
+        $temp->add(new admin_setting_configcheckbox('grade_multfactor_alt',
+            new lang_string('multfactor_alt', 'grades'),
+            new lang_string('multfactor_alt_desc', 'grades'), 0));
+
+        $temp->add(new admin_setting_configcheckbox('grade_item_manual_recompute',
+            new lang_string('gradeitemmanualrecompute', 'grades'),
+            new lang_string('gradeitemmanualrecompute_help', 'grades'), 0));
+
         $temp->add(new admin_setting_configselect('grade_displaytype', new lang_string('gradedisplaytype', 'grades'),
                                                   new lang_string('gradedisplaytype_help', 'grades'), GRADE_DISPLAY_TYPE_REAL, $display_types));
 
@@ -159,6 +223,8 @@ if (has_capability('moodle/grade:manage', $systemcontext)
                                                              'locktime' => new lang_string('locktime', 'grades'),
                                                              'aggregationcoef' => new lang_string('aggregationcoef', 'grades'),
                                                              'parentcategory' => new lang_string('parentcategory', 'grades'))));
+
+        $temp->add(new admin_setting_configcheckbox('grade_min_hide', new lang_string('minimum_hide', 'grades'), new lang_string('minimum_hide_help', 'grades'), '0'));
     }
     $ADMIN->add('grades', $temp);
 
@@ -171,8 +237,33 @@ if (has_capability('moodle/grade:manage', $systemcontext)
         $outcomes = new admin_externalpage('outcomes', new lang_string('outcomes', 'grades'), $CFG->wwwroot.'/grade/edit/outcome/index.php', 'moodle/grade:manage');
         $ADMIN->add('grades', $outcomes);
     }
-    $letters = new admin_externalpage('letters', new lang_string('letters', 'grades'), $CFG->wwwroot.'/grade/edit/letter/index.php', 'moodle/grade:manageletters');
+
+    $letters_str = new lang_string('letters', 'grades');
+    $letters_base = $CFG->wwwroot.'/grade/edit/letter';
+    $letters = new admin_externalpage('letters', $letters_str, $letters_base . '/index.php', 'moodle/grade:manageletters');
+
     $ADMIN->add('grades', $letters);
+
+    $letters_settings_str = new lang_string('letter', 'grades') . ' ' . new lang_string('edit') . ' ' . new lang_string('settings');
+    $temp = new admin_settingpage('letterssettings', $letters_settings_str, 'moodle/grade:manageletters');
+    if ($ADMIN->fulltree) {
+        $temp->add(new admin_setting_configcheckbox('grade_letters_custom',
+            new lang_string('letterscustompercents', 'grades'), new lang_string('letterscustompercents_help', 'grades'), 0));
+
+        $temp->add(new admin_setting_configcheckbox('grade_letters_strict',
+            new lang_string('lettersstrictletter', 'grades'), new lang_string('lettersstrictletter_help', 'grades'), 0));
+
+        $params = array('courseid' => 0);
+
+        $db_scales = $DB->get_records_menu('scale', $params, '', 'id, name');
+
+        $scales = array(0 => new lang_string('lettersdefaultletters', 'grades')) + $db_scales;
+
+        $temp->add(new admin_setting_configselect('grade_letters_names',
+            new lang_string('lettersnames', 'grades'),
+            new lang_string('lettersname_help', 'grades'), 0, $scales));
+    }
+    $ADMIN->add('grades', $temp);
 
     // The plugins must implement a settings.php file that adds their admin settings to the $settings object
 

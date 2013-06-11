@@ -827,6 +827,8 @@ class grade_plugin_return {
     public $courseid;
     public $userid;
     public $page;
+    public $silast;
+    public $filast;
 
     /**
      * Constructor
@@ -840,6 +842,8 @@ class grade_plugin_return {
             $this->courseid = optional_param('gpr_courseid', null, PARAM_INT);
             $this->userid   = optional_param('gpr_userid', null, PARAM_INT);
             $this->page     = optional_param('gpr_page', null, PARAM_INT);
+            $this->silast      = optional_param('gpr_silast', null, PARAM_ALPHAEXT);
+            $this->filast    = optional_param('gpr_filast', null, PARAM_ALPHAEXT);
 
         } else {
             foreach ($params as $key=>$value) {
@@ -877,6 +881,14 @@ class grade_plugin_return {
             $params['page'] = $this->page;
         }
 
+        if (!empty($this->silast)) {
+            $params['silast'] = $this->silast;
+        }
+        
+        if (!empty($this->filast)) {
+            $params['filast'] = $this->filast;
+        }
+
         return $params;
     }
 
@@ -910,6 +922,16 @@ class grade_plugin_return {
 
         if (!empty($this->page)) {
             $url .= $glue.'page='.$this->page;
+            $glue = '&amp;';
+        }
+
+        if (!empty($this->silast)) {
+            $url .= $glue.'silast='.$this->silast;
+            $glue = '&amp;';
+        }
+
+        if (!empty($this->filast)) {
+            $url .= $glue.'filast='.$this->filast;
             $glue = '&amp;';
         }
 
@@ -949,6 +971,14 @@ class grade_plugin_return {
         if (!empty($this->page)) {
             $result .= '<input type="hidden" name="gpr_page" value="'.$this->page.'" />';
         }
+
+        if (!empty($this->silast)) {
+            $result .= '<input type="hidden" name="gpr_silast" value="'.$this->silast.'" />';
+        }
+
+        if (!empty($this->filast)) {
+            $result .= '<input type="hidden" name="gpr_filast" value="'.$this->filast.'" />';
+        }
     }
 
     /**
@@ -985,6 +1015,16 @@ class grade_plugin_return {
             $mform->addElement('hidden', 'gpr_page', $this->page);
             $mform->setType('gpr_page', PARAM_INT);
         }
+
+        if (!empty($this->silast)) {
+            $mform->addElement('hidden', 'gpr_silast', $this->silast);
+            $mform->setType('gpr_silast', PARAM_ALPHAEXT);
+        }
+
+        if (!empty($this->filast)) {
+            $mform->addElement('hidden', 'gpr_filast', $this->filast);
+            $mform->setType('gpr_filast', PARAM_ALPHAEXT);
+        }
     }
 
     /**
@@ -1015,6 +1055,14 @@ class grade_plugin_return {
 
         if (!empty($this->page)) {
             $url->param('gpr_page', $this->page);
+        }
+
+        if (!empty($this->silast)) {
+            $url->param('gpr_silast', $this->silast);
+        }
+
+        if (!empty($this->filast)) {
+            $url->param('gpr_filast', $this->filast);
         }
 
         return $url;
