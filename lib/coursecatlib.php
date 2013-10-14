@@ -1016,6 +1016,8 @@ class coursecat implements renderable, cacheable_object, IteratorAggregate {
      *             Only cached fields may be used for sorting!
      *    - offset
      *    - limit - maximum number of children to return, 0 or null for no limit
+     *    - recusive - returns all children of the specified category and all
+     *                 subcategories
      * @return coursecat[] Array of coursecat objects indexed by category id
      */
     public function get_children($options = array()) {
@@ -1088,6 +1090,11 @@ class coursecat implements renderable, cacheable_object, IteratorAggregate {
         foreach ($sortedids as $id) {
             if (isset($records[$id])) {
                 $rv[$id] = new coursecat($records[$id]);
+                // Check if we need to recursively get more categories.
+                if (!empty($options['recursive'])) {
+                    $subcategories = $rv[$id]->get_children($options);
+                    $rv = $rv + $subcategories;
+                }
             }
         }
         return $rv;
