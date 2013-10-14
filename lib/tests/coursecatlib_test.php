@@ -358,6 +358,17 @@ class coursecatlib_testcase extends advanced_testcase {
         $children = $category1->get_children();
         $this->assertEquals(array($category2->id, $category4->id, $category6->id, $category7->id), array_keys($children));
         $this->assertEquals(4, $category1->get_children_count());
+
+        // Test that calling coursecat::get_children() recursively will return
+        // all categories under $category1 that user can view.
+
+        // Add additional subcategories. Cat9 is a subchild of a hidden category.
+        $category8 = coursecat::create(array('name' => 'Cat8', 'parent' => $category2->id));
+        $category9 = coursecat::create(array('name' => 'Cat9', 'parent' => $category3->id));
+
+        // Should be 2, 8, 4, 6, 7.
+        $children = $category1->get_children(array('recursive' => true));
+        $this->assertEquals(array($category2->id, $category8->id, $category4->id, $category6->id, $category7->id), array_keys($children));
     }
 
     public function test_get_search_courses() {
