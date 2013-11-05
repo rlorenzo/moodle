@@ -4409,6 +4409,22 @@ class assign {
                                       $messagetype,
                                       $eventtype,
                                       $updatetime) {
+
+        // If from and to user is the same, some email systems will complain and
+        // reject the message. See MDL-42580.
+        if ($userfrom == $userto) {
+            global $CFG;
+            // Replace admin email/name with support contact email/name. Need a
+            // real user object, because send_message is eventually called,
+            // which inserts a database record into the "message_read" table.
+            $userfrom = get_admin();
+            // Use noreply email address, because we don't have anyone on the
+            // other side who will read any replies.
+            $userfrom->email = $CFG->noreplyaddress;
+            $userfrom->firstname = '';
+            $userfrom->lastname = $CFG->supportname;
+        }
+
         self::send_assignment_notification($userfrom,
                                            $userto,
                                            $messagetype,
