@@ -60,8 +60,8 @@ $PAGE->requires->string_for_js('toc', 'imscp');
 $PAGE->requires->string_for_js('hide', 'moodle');
 $PAGE->requires->string_for_js('show', 'moodle');
 
-//TODO: find some better way to disable blocks and minimise footer - pagetype just for this does not seem like a good solution
-//$PAGE->set_pagelayout('maxcontent');
+// Supresss blocks from displaying with IMS content.
+$PAGE->blocks->show_only_fake_blocks();
 
 $PAGE->set_title($course->shortname.': '.$imscp->name);
 $PAGE->set_heading($course->fullname);
