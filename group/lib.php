@@ -716,7 +716,7 @@ function groups_get_potential_members($courseid, $roleid = null, $cohortid = nul
 
     $context = context_course::instance($courseid);
 
-    list($esql, $params) = get_enrolled_sql($context);
+    list($esql, $params) = get_enrolled_sql($context, '', 0, true);
 
     if ($roleid) {
         // We are looking for all users with this role assigned in this context or higher.

@@ -302,6 +302,10 @@ class behat_data_generators extends behat_base {
             $data['enrol'] = 'manual';
         }
 
+        if (!isset($data['status'])) {
+            $data['status'] = ENROL_USER_ACTIVE;
+        }
+
         // If the provided course shortname is the site shortname we consider it a system role assign.
         if ($data['courseid'] == $SITE->id) {
             // Frontpage course assign.
@@ -310,7 +314,8 @@ class behat_data_generators extends behat_base {
 
         } else {
             // Course assign.
-            $this->datagenerator->enrol_user($data['userid'], $data['courseid'], $data['roleid'], $data['enrol']);
+            $this->datagenerator->enrol_user($data['userid'], $data['courseid'],
+                    $data['roleid'], $data['enrol'], 0, 0, $data['status']);
         }
 
     }
