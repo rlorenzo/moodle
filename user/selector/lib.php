@@ -787,8 +787,8 @@ class group_non_members_selector extends groups_user_selector_base {
         // Get the search condition.
         list($searchcondition, $searchparams) = $this->search_sql($search, 'u');
 
-        // Build the SQL
-        list($enrolsql, $enrolparams) = get_enrolled_sql($context);
+        // Build the SQL.
+        list($enrolsql, $enrolparams) = get_enrolled_sql($context, '', 0, true);
         $fields = "SELECT r.id AS roleid, u.id AS userid,
                           " . $this->required_fields_sql('u') . ",
                           (SELECT count(igm.groupid)
