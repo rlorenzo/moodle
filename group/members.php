@@ -47,8 +47,13 @@ if ($cancel) {
     redirect($returnurl);
 }
 
-$groupmembersselector = new group_members_selector('removeselect', array('groupid' => $groupid, 'courseid' => $course->id));
-$potentialmembersselector = new group_non_members_selector('addselect', array('groupid' => $groupid, 'courseid' => $course->id));
+$selectoroptions = array('groupid' => $groupid, 'courseid' => $course->id);
+if (!has_capability('moodle/course:viewsuspendedusers', $context)) {
+    $selectoroptions['exclude'] = get_suspended_userids($context);
+}
+
+$groupmembersselector = new group_members_selector('removeselect', $selectoroptions);
+$potentialmembersselector = new group_non_members_selector('addselect', $selectoroptions);
 
 if (optional_param('add', false, PARAM_BOOL) && confirm_sesskey()) {
     $userstoadd = $potentialmembersselector->get_selected_users();

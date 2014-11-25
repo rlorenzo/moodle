@@ -79,11 +79,16 @@ switch ($action) {
     case 'ajax_getmembersingroup':
         $roles = array();
         if ($groupmemberroles = groups_get_members_by_role($groupids[0], $courseid, 'u.id, ' . get_all_user_name_fields(true, 'u'))) {
+            $suspendeduserids = get_suspended_userids($context);
+            $viewsuspendedusers = has_capability('moodle/course:viewsuspendedusers', $context);
             foreach($groupmemberroles as $roleid=>$roledata) {
                 $shortroledata = new stdClass();
                 $shortroledata->name = $roledata->name;
                 $shortroledata->users = array();
                 foreach($roledata->users as $member) {
+                    if (in_array($member->id,  $suspendeduserids) && !$viewsuspendedusers) {
+                        continue;
+                    }
                     $shortmember = new stdClass();
                     $shortmember->id = $member->id;
                     $shortmember->name = fullname($member, true);

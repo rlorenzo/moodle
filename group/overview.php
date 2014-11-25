@@ -215,6 +215,8 @@ echo $OUTPUT->render($select);
 /// Print table
 $printed = false;
 $hoverevents = array();
+$suspendeduserids = get_suspended_userids($context);
+$viewsuspendedusers = has_capability('moodle/course:viewsuspendedusers', $context);
 foreach ($members as $gpgid=>$groupdata) {
     if ($groupingid and $groupingid != $gpgid) {
         if ($groupingid > 0 || $gpgid > 0) { // Still show 'not in group' when 'no grouping' selected.
@@ -246,6 +248,9 @@ foreach ($members as $gpgid=>$groupdata) {
         }
         $fullnames = array();
         foreach ($users as $user) {
+            if (in_array($user->id, $suspendeduserids) && !$viewsuspendedusers) {
+                continue;
+            }
             $fullnames[] = '<a href="'.$CFG->wwwroot.'/user/view.php?id='.$user->id.'&amp;course='.$course->id.'">'.fullname($user, true).'</a>';
         }
         $line[] = implode(', ', $fullnames);
