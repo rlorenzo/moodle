@@ -97,7 +97,7 @@ if ($editform->is_cancelled()) {
     }
 
     $onlyactive = true;
-    if (!$data->includeonlyactiveenrol && has_capability('moodle/course:viewsuspendedusers', $context)) {
+    if (empty($data->includeonlyactiveenrol) && has_capability('moodle/course:viewsuspendedusers', $context)) {
         $onlyactive = false;
     }
 

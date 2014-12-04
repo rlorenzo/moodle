@@ -247,11 +247,28 @@ foreach ($members as $gpgid=>$groupdata) {
             $hoverevents[$gpid] = $jsdescription;
         }
         $fullnames = array();
+        $suspendedstring = null;
+        $suspendedicon = null;
         foreach ($users as $user) {
             if (in_array($user->id, $suspendeduserids) && !$viewsuspendedusers) {
                 continue;
             }
-            $fullnames[] = '<a href="'.$CFG->wwwroot.'/user/view.php?id='.$user->id.'&amp;course='.$course->id.'">'.fullname($user, true).'</a>';
+            $username = '<a href="'.$CFG->wwwroot.'/user/view.php?id='.$user->id.
+                    '&amp;course='.$course->id.'">'.fullname($user, true).'</a>';
+            // If user can view suspended users, help user identify them.
+            if (in_array($user->id, $suspendeduserids) && $viewsuspendedusers) {
+                // May be lots of suspended users so only get the string once.
+                if (empty($suspendedstring)) {
+                    $suspendedstring = get_string('userenrolmentsuspended', 'grades');
+                    $suspendedicon = ' ' . html_writer::empty_tag('img',
+                        array('src' => $OUTPUT->pix_url('i/enrolmentsuspended'),
+                              'title' => $suspendedstring, 'alt' => $suspendedstring,
+                              'class' => 'usersuspendedicon'));
+                }
+                $username .= $suspendedicon;
+                $username = html_writer::tag('span', $username, array('class' => 'usersuspended'));
+            }
+            $fullnames[] = $username;
         }
         $line[] = implode(', ', $fullnames);
         $line[] = count($users);

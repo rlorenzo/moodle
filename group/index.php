@@ -81,6 +81,7 @@ switch ($action) {
         if ($groupmemberroles = groups_get_members_by_role($groupids[0], $courseid, 'u.id, ' . get_all_user_name_fields(true, 'u'))) {
             $suspendeduserids = get_suspended_userids($context);
             $viewsuspendedusers = has_capability('moodle/course:viewsuspendedusers', $context);
+            $suspendedstring = null;
             foreach($groupmemberroles as $roleid=>$roledata) {
                 $shortroledata = new stdClass();
                 $shortroledata->name = $roledata->name;
@@ -92,6 +93,14 @@ switch ($action) {
                     $shortmember = new stdClass();
                     $shortmember->id = $member->id;
                     $shortmember->name = fullname($member, true);
+                    // If user can view suspended users, help user identify them.
+                    if (in_array($member->id, $suspendeduserids) && $viewsuspendedusers) {
+                        // May be lots of suspended users so only get the string once.
+                        if (empty($suspendedstring)) {
+                            $suspendedstring = ' (' . get_string('userenrolmentsuspended', 'grades') . ')';
+                        }
+                        $shortmember->name .= $suspendedstring;
+                    }
                     $shortroledata->users[] = $shortmember;
                 }
                 $roles[] = $shortroledata;
