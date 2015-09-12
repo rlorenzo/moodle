@@ -251,9 +251,8 @@ if ($formdata = $mform2->is_cancelled()) {
             $user->username = '';
         }
 
-        if ($optype == UU_USER_ADDNEW or $optype == UU_USER_ADDINC) {
+        if ($optype == UU_USER_ADDNEW or $optype == UU_USER_ADDINC or $optype == UU_USER_ADD_UPDATE) {
             // user creation is a special case - the username may be constructed from templates using firstname and lastname
-            // better never try this in mixed update types
             $error = false;
             if (!isset($user->firstname) or $user->firstname === '') {
                 $upt->track('status', get_string('missingfield', 'error', 'firstname'), 'error');

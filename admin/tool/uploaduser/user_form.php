@@ -209,12 +209,10 @@ class admin_uploaduser_form2 extends moodleform {
         $mform->addElement('text', 'username', get_string('uuusernametemplate', 'tool_uploaduser'), 'size="20"');
         $mform->setType('username', PARAM_RAW); // No cleaning here. The process verifies it later.
         $mform->addRule('username', get_string('requiredtemplate', 'tool_uploaduser'), 'required', null, 'client');
-        $mform->disabledIf('username', 'uutype', 'eq', UU_USER_ADD_UPDATE);
         $mform->disabledIf('username', 'uutype', 'eq', UU_USER_UPDATE);
 
         $mform->addElement('text', 'email', get_string('email'), 'maxlength="100" size="30"');
         $mform->setType('email', PARAM_RAW); // No cleaning here. The process verifies it later.
-        $mform->disabledIf('email', 'uutype', 'eq', UU_USER_ADD_UPDATE);
         $mform->disabledIf('email', 'uutype', 'eq', UU_USER_UPDATE);
 
         // only enabled and known to work plugins
