@@ -75,6 +75,11 @@ abstract class testing_util {
     private static $originaldatafilesjsonadded = false;
 
     /**
+     * @var array Stores the last used auto-increment value
+     */
+    protected static $lastsequenceids = array();
+
+    /**
      * @var int next sequence value for a single test cycle.
      */
     protected static $sequencenextstartingid = null;
@@ -363,7 +368,8 @@ abstract class testing_util {
                 }
                 if (!is_null($info->auto_increment)) {
                     $table = preg_replace('/^'.preg_quote($prefix, '/').'/', '', $table);
-                    if ($info->auto_increment == 1) {
+                    $last  = isset(self::$lastsequenceids[$table]) ? self::$lastsequenceids[$table] : 1;
+                    if ($info->auto_increment == $last) {
                         $empties[$table] = $table;
                     }
                 }
@@ -499,6 +505,7 @@ abstract class testing_util {
                 if (isset($structure[$table]['id']) and $structure[$table]['id']->auto_increment) {
                     if (isset($sequences[$table])) {
                         $nextid = self::get_next_sequence_starting_value($records);
+                        self::$lastsequenceids[$table] = $nextid;
                         if ($sequences[$table] != $nextid) {
                             $DB->change_database_structure("ALTER TABLE {$prefix}{$table} AUTO_INCREMENT = $nextid");
                         }
@@ -584,6 +591,32 @@ abstract class testing_util {
         if (!$structure = self::get_tablestructure()) {
             // not initialised yet
             return false;
+        }
+
+        if (empty(self::$lastsequenceids)) {
+            // Populate with defaults.
+            $dbfamily = $DB->get_dbfamily();
+            if ($dbfamily === 'mysql') {
+                $prefix = $DB->get_prefix();
+                $rs     = $DB->get_recordset_sql("SHOW TABLE STATUS LIKE ?", array($prefix.'%'));
+                foreach ($rs as $info) {
+                    $table = strtolower($info->name);
+                    if (strpos($table, $prefix) !== 0) {
+                        // incorrect table match caused by _
+                        continue;
+                    }
+                    if (!is_null($info->auto_increment)) {
+                        $table = preg_replace('/^'.preg_quote($prefix, '/').'/', '', $table);
+                        self::$lastsequenceids[$table] = $info->auto_increment;
+                    }
+                }
+            } else {
+                // This is sometimes inaccurate, depending on if this is a fresh database or not.
+                // After one database reset though, the last sequence IDs will be up to date.
+                foreach ($data as $table => $records) {
+                    self::$lastsequenceids[$table] = count($records) + 1;
+                }
+            }
         }
 
         $empties = self::guess_unmodified_empty_tables();
