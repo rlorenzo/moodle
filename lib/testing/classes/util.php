@@ -682,6 +682,11 @@ abstract class testing_util {
                 continue;
             }
 
+            // For unit tests, if the table hasn't been written to, then we can avoid having to reset or prune the table.
+            if (PHPUNIT_TEST && !isset(phpunit_util::$modifiedtables[$table])) {
+                continue;
+            }
+
             if (empty($records)) {
                 if (isset($empties[$table])) {
                     // table was not modified and is empty

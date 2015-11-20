@@ -39,6 +39,11 @@ class phpunit_util extends testing_util {
      */
     public static $lastdbwrites = null;
 
+    /**
+     * @var array Tables that have been written to.
+     */
+    public static $modifiedtables = array();
+
     /** @var array An array of original globals, restored after each test */
     protected static $globals = array();
 
@@ -63,6 +68,23 @@ class phpunit_util extends testing_util {
      * @var array Files to skip when dropping dataroot folder
      */
     protected static $datarootskipondrop = array('.', '..', 'lock', 'webrunner.xml');
+
+    /**
+     * Extract the tables from the SQL and store them for later reference.
+     *
+     * This helps to keep track of modified tables during tests.  Modified
+     * tables will be reset.
+     *
+     * @param $prefix
+     * @param $sql
+     */
+    public static function update_modified_tables($prefix, $sql) {
+        $matches = [];
+        preg_match_all('/'.preg_quote($prefix, '/').'(\w+)/m', $sql, $matches, PREG_SET_ORDER);
+        foreach ($matches as $match) {
+            self::$modifiedtables[$match[1]] = $match[1];
+        }
+    }
 
     /**
      * Load global $CFG;
@@ -288,6 +310,7 @@ class phpunit_util extends testing_util {
         }
 
         self::$lastdbwrites = $DB->perf_get_writes();
+        self::$modifiedtables = [];
 
         return true;
     }

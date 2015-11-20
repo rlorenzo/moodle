@@ -404,6 +404,10 @@ abstract class moodle_database {
             case SQL_QUERY_UPDATE:
             case SQL_QUERY_STRUCTURE:
                 $this->writes++;
+
+                if (PHPUNIT_TEST) {
+                    phpunit_util::update_modified_tables($this->prefix, $sql);
+                }
         }
 
         $this->print_debug($sql, $params);
