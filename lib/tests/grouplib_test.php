@@ -1352,4 +1352,28 @@ class core_grouplib_testcase extends advanced_testcase {
         $result = groups_user_groups_visible($course, $user1->id, $cm);
         $this->assertTrue($result); // Cm with visible groups.
     }
+
+    public function test_user_in_multiple_groups() {
+        $this->resetAfterTest(true);
+
+        $generator = $this->getDataGenerator();
+
+        // Create course & user.
+        $course = $generator->create_course();
+        $user = $generator->create_user();
+        $this->getDataGenerator()->enrol_user($user->id, $course->id);
+
+        // Create groups and grouping.
+        $group1 = $generator->create_group(array('courseid' => $course->id));
+        $group2 = $generator->create_group(array('courseid' => $course->id));
+        $grouping = $generator->create_grouping(array('courseid' => $course->id));
+        $generator->create_grouping_group(array('groupingid' => $grouping->id, 'groupid' => $group1->id));
+        $generator->create_grouping_group(array('groupingid' => $grouping->id, 'groupid' => $group2->id));
+
+        // Add user to both groups and test groups_get_grouping_members().
+        $generator->create_group_member(array('userid' => $user->id, 'groupid' => $group1->id));
+        $generator->create_group_member(array('userid' => $user->id, 'groupid' => $group2->id));
+        groups_get_grouping_members($grouping->id);
+        $this->assertDebuggingNotCalled();
+    }
 }
