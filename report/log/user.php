@@ -32,10 +32,60 @@ $mode     = optional_param('mode', 'today', PARAM_ALPHA);
 $page     = optional_param('page', 0, PARAM_INT);
 $perpage  = optional_param('perpage', 100, PARAM_INT);
 $logreader   = optional_param('logreader', '', PARAM_COMPONENT); // Log reader which will be used for displaying logs.
+$date        = optional_param('date', 0, PARAM_INT); // Date to display.
+$modid       = optional_param('modid', 0, PARAM_ALPHANUMEXT); // Module id or 'site_errors'.
+$modaction   = optional_param('modaction', '', PARAM_ALPHAEXT); // An action as recorded in the logs.
+$edulevel    = optional_param('edulevel', -1, PARAM_INT); // Educational level.
+$logformat   = optional_param('download', '', PARAM_ALPHA);
 
 if ($mode !== 'today' and $mode !== 'all') {
     $mode = 'today';
 }
+
+// Time to filter records from.
+if ($mode === 'today') {
+    $date = usergetmidnight(time());
+}
+
+$params = array();
+if ($userid !== 0) {
+    $params['id'] = $userid;
+}
+if (!empty($courseid)) {
+    $params['course'] = $courseid;
+} else {
+    $site = get_site();
+    $courseid = $site->id;
+}
+if ($mode !== '') {
+    $params['mode'] = $mode;
+}
+if ($date !== 0) {
+    $params['date'] = $date;
+}
+if ($modid !== 0) {
+    $params['modid'] = $modid;
+}
+if ($modaction !== '') {
+    $params['modaction'] = $modaction;
+}
+if ($page !== '0') {
+    $params['page'] = $page;
+}
+if ($perpage !== '100') {
+    $params['perpage'] = $perpage;
+}
+if ($logformat !== '') {
+    $params['download'] = $logformat;
+}
+if ($logreader !== '') {
+    $params['logreader'] = $logreader;
+}
+if (($edulevel != -1)) {
+    $params['edulevel'] = $edulevel;
+}
+
+$url = new moodle_url("/report/log/user.php", $params);
 
 $user = $DB->get_record('user', array('id' => $userid, 'deleted' => 0), '*', MUST_EXIST);
 $course = $DB->get_record('course', array('id' => $courseid), '*', MUST_EXIST);
@@ -102,6 +152,21 @@ $event = \report_log\event\user_report_viewed::create(array('context' => $course
         'other' => array('mode' => $mode)));
 $event->trigger();
 
+$output = $PAGE->get_renderer('report_log');
+
+$reportlog = new report_log_user_renderable($logreader, $course, $user->id, $modid, $modaction,
+    -1, $edulevel, true, true, true, true, $url, $date, $logformat, $page, $perpage, 'timecreated DESC', $mode);
+
+if (!empty($reportlog->selectedlogreader)) {
+    $reportlog->setup_table();
+}
+
+if (!empty($logformat)) {
+    \core\session\manager::write_close();
+    $reportlog->download();
+    exit();
+}
+
 echo $OUTPUT->header();
 if ($courseid != SITEID) {
     $userheading = array(
@@ -109,23 +174,6 @@ if ($courseid != SITEID) {
             'usercontext' => $personalcontext,
         );
     echo $OUTPUT->context_header($userheading, 2);
-}
-
-// Time to filter records from.
-if ($mode === 'today') {
-    $timefrom = usergetmidnight(time());
-} else {
-    $timefrom = 0;
-}
-
-$output = $PAGE->get_renderer('report_log');
-$reportlog = new report_log_renderable($logreader, $course, $user->id, 0, '', -1, -1, false, false, true, false, $PAGE->url,
-        $timefrom, '', $page, $perpage, 'timecreated DESC');
-
-// Setup table if log reader is enabled.
-if (!empty($reportlog->selectedlogreader)) {
-    $reportlog->setup_table();
-    $reportlog->tablelog->is_downloadable(false);
 }
 
 echo $output->reader_selector($reportlog);
