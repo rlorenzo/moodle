@@ -400,7 +400,7 @@ class icon_system_fontawesome extends icon_system_font {
                     foreach ($pluginsfunction as $plugintype => $plugins) {
                         foreach ($plugins as $pluginfunction) {
                             $pluginmap = $pluginfunction();
-                            $this->map += $pluginmap;
+                            $this->map = $pluginmap + $this->map;
                         }
                     }
                 }
