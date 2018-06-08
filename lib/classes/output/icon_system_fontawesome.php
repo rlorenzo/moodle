@@ -410,7 +410,12 @@ class icon_system_fontawesome extends icon_system_font {
                     foreach ($pluginsfunction as $plugintype => $plugins) {
                         foreach ($plugins as $pluginfunction) {
                             $pluginmap = $pluginfunction();
-                            $this->map += $pluginmap;
+                            if ($plugintype == 'theme') {
+                            // Allow themes to override fontawesome icons.
+                                $this->map = $pluginmap + $this->map;
+                            } else {
+                                $this->map += $pluginmap;
+                            }
                         }
                     }
                 }
