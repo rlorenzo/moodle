@@ -14,7 +14,7 @@ Feature: Upload users
       | Section 1 | math102 | S1 |
       | Section 3 | math102 | S3 |
     And I log in as "admin"
-    And I navigate to "Users > Accounts >Upload users" in site administration
+    And I navigate to "Users > Accounts > Upload users" in site administration
     When I upload "lib/tests/fixtures/upload_users.csv" file to "File" filemanager
     And I press "Upload users"
     Then I should see "Upload users preview"
@@ -188,3 +188,65 @@ Feature: Upload users
     And I should see "12 January 2020" in the "Enrolment ends" "table_row"
     And I click on "Close" "button"
     And I log out
+
+  @javascript
+  Scenario: Upload users enrolling them on courses and assign category roles
+    Given the following "courses" exist:
+      | fullname | shortname |
+      | management1 | management1 |
+      | film1 | film1 |
+    And the following "categories" exist:
+      | name | idnumber |
+      | MGMT | MGMT |
+      | Film | Film |
+    And I log in as "admin"
+    And I navigate to "Users > Accounts > Upload users" in site administration
+    When I upload "lib/tests/fixtures/upload_users_category.csv" file to "File" filemanager
+    And I press "Upload users"
+    Then I should see "Upload users preview"
+    And I should see "Tom"
+    And I should see "Jones"
+    And I should see "Trent"
+    And I should see "Reznor"
+    And I should see "Aurora"
+    And I should see "Jiang"
+    And I should see "Federico"
+    And I should see "Fellini"
+    And I should see "MGMT"
+    And I should see "Film"
+    And I should see "manager"
+    And I should see "student"
+    And I should see "coursecreator"
+    And I should see "management1"
+    And I should see "film1"
+    And I press "Upload users"
+    And I press "Continue"
+    And I navigate to "Users > Accounts > Browse list of users" in site administration
+    And I should see "Tom Jones"
+    And I should see "Trent Reznor"
+    And I should see "reznor@example.com"
+    And I am on "management1" course homepage
+    And I should see "Participants"
+    And I follow "Participants"
+    And I should see "Tom Jones"
+    And I should see "Trent Reznor"
+    And I should see "Aurora Jiang"
+    And I should see "Student"
+    And I am on "film1" course homepage
+    And I should see "Participants"
+    And I follow "Participants"
+    And I should see "Federico Fellini"
+    And I should see "Student"
+    And I navigate to "Courses > Manage courses and categories" in site administration
+    And I open the action menu in "MGMT" "list_item"
+    And I choose "Assign roles" in the open action menu
+    And I should see "Manager"
+    And I should see "Tom Jones"
+    And I should see "Trent Reznor"
+    And I should see "Course creator"
+    And I should see "Aurora Jiang"
+    And I navigate to "Courses > Manage courses and categories" in site administration
+    And I open the action menu in "Film" "list_item"
+    And I choose "Assign roles" in the open action menu
+    And I should see "Course creator"
+    And I should see "Federico Fellini"

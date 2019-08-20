@@ -189,6 +189,8 @@ if ($formdata = $mform2->is_cancelled()) {
     // caches
     $ccache         = array(); // course cache - do not fetch all courses here, we  will not probably use them all anyway!
     $cohorts        = array();
+    $categoryrolecache = array();
+    $categorycache  = array(); // Category cache - do not fetch all categories here, we will not probably use them all.
     $rolecache      = uu_allowed_roles_cache(); // Course roles lookup cache.
     $sysrolecache   = uu_allowed_sysroles_cache(); // System roles lookup cache.
     $manualcache    = array(); // cache of used manual enrol plugins in each course
@@ -953,6 +955,42 @@ if ($formdata = $mform2->is_cancelled()) {
 
                 continue;
             }
+
+            if (preg_match('/^categoryrole\d+$/', $column)) {
+                $j = substr($column, 12);
+                $categoryidnumber = $user->{'category'.$j};
+                if (empty($categoryidnumber)) {
+                    continue;
+                }
+                if (!array_key_exists($categoryidnumber, $categorycache)) {
+                    $category = $DB->get_record('course_categories', array('idnumber' => $categoryidnumber), 'id, idnumber');
+                    $categoryrolecache[$categoryidnumber] = uu_allowed_roles_cache($category->id);
+                    if (count($category) != 1) {
+                        $upt->track('enrolments', get_string('unknowncategory', 'error', s($categoryidnumber)), 'error');
+                        continue;
+                    }
+                    $categoryobj = core_course_category::get($category->id);
+                    $context = context_coursecat::instance($categoryobj->id);
+                    $categorycache[$categoryidnumber] = $context;
+                }
+                // Check the user's category role.
+                $roleid = false;
+                if (!empty($user->{'categoryrole'.$j})) {
+                    $rolename = $user->{'categoryrole'.$j};
+                    if (array_key_exists($rolename, $categoryrolecache[$categoryidnumber])) {
+                        $roleid = $categoryrolecache[$categoryidnumber][$rolename]->id;
+                    } else {
+                        $upt->track('enrolments', get_string('unknownrole', 'error', s($rolename)), 'error');
+                        continue;
+                    }
+                    // Assign a role to user with category context.
+                    role_assign($roleid, $user->id, $categorycache[$categoryidnumber]->id);
+                } else {
+                    $upt->track('enrolments', get_string('missingcategoryrole', 'error', s($categoryidnumber)), 'error');
+                    continue;
+                }
+            }
+
             if (!preg_match('/^course\d+$/', $column)) {
                 continue;
             }
