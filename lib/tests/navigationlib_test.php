@@ -545,6 +545,31 @@ class core_navigationlib_testcase extends advanced_testcase {
         // Test it's empty again!
         $this->assertEquals(0, count($navigationnodecollection->get_key_list()));
     }
+
+    /**
+     * Makes sure that added keys to coursecompletion, filters, and repositories
+     * make nodes searchable.
+     */
+    public function test_navigation_node_added_keys() {
+        global $PAGE;
+
+        $this->resetAfterTest(true);
+        
+        $course = $this->getDataGenerator()->create_course();
+        $PAGE->set_course($course);
+        $settings = new settings_navigation($PAGE);
+
+        $nodestofind = array(
+            'coursecompletion'  => navigation_node::TYPE_SETTING,
+            'filters'           => navigation_node::TYPE_SETTING,
+            'repositories'      => navigation_node::TYPE_SETTING,
+        );
+
+        foreach ($nodestofind as $name => $type) {
+            $setting = $settings->find($name, $type);
+            $this->assertNotNull($setting);
+        }
+    }
 }
 
 
