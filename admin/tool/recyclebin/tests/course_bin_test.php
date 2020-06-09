@@ -195,6 +195,10 @@ class tool_recyclebin_course_bin_tests extends advanced_testcase {
                 (object)['plugin' => 'backup', 'name' => 'backup_auto_storage', 'value' => 2],
                 (object)['plugin' => 'backup', 'name' => 'backup_auto_destination', 'value' => true],
             ]],
+
+            'restore/restore_general_users moodle' => [[
+                (object)['plugin' => 'restore', 'name' => 'restore_general_users', 'value' => 0],
+            ]],
         ];
     }
 

@@ -244,6 +244,12 @@ class course_bin extends base_bin {
             \backup::TARGET_EXISTING_ADDING
         );
 
+        // Make sure to restore user data.
+        if (get_config('backup', 'backup_auto_users')) {
+            $controller->get_plan()->get_setting('users')->set_value(1);
+            $controller->get_plan()->get_setting('groups')->set_value(1);
+        }
+
         // Prechecks.
         if (!$controller->execute_precheck()) {
             $results = $controller->get_precheck_results();
