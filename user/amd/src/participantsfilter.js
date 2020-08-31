@@ -332,11 +332,12 @@ export const init = participantsRegionId => {
         } else {
             addRowButton.removeAttribute('disabled');
         }
+        console.log("hello");
 
         if (filters.length === 1) {
             filterSet.querySelector(Selectors.filterset.regions.filtermatch).classList.add('hidden');
-            filterSet.querySelector(Selectors.filterset.fields.join).value = 1;
-            filterSet.dataset.filterverb = 1;
+            filterSet.querySelector(Selectors.filterset.fields.join).value = 2;
+            filterSet.dataset.filterverb = 2;
         } else {
             filterSet.querySelector(Selectors.filterset.regions.filtermatch).classList.remove('hidden');
         }
