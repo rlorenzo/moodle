@@ -333,6 +333,7 @@ export const init = participantsRegionId => {
             addRowButton.removeAttribute('disabled');
         }
         console.log("hello");
+        console.log("filters.length = " + filters.length);
 
         if (filters.length === 1) {
             filterSet.querySelector(Selectors.filterset.regions.filtermatch).classList.add('hidden');
@@ -489,8 +490,10 @@ export const init = participantsRegionId => {
         filterSet.dataset.filterverb = e.target.value;
     });
 
+    console.log('filterSet.dataset.tableRegion = ' + filterSet.dataset.tableRegion);
     const tableRoot = DynamicTable.getTableFromId(filterSet.dataset.tableRegion);
     const initialFilters = DynamicTable.getFilters(tableRoot);
+    console.log('initialFilters = ' + JSON.stringify(initialFilters));
     if (initialFilters) {
         const initialFilterPromise = new Pending('core_user/participantsfilter:setFilterFromConfig');
         // Apply the initial filter configuration.
