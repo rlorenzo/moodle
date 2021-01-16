@@ -201,6 +201,11 @@ class cachestore_memcached extends cache_store implements cache_is_configurable 
         $this->options[Memcached::OPT_HASH] = $hashmethod;
         $this->options[Memcached::OPT_BUFFER_WRITES] = $bufferwrites;
 
+        // Use DYNAMIC_CLIENT_MODE to detect changes to the elasticache cluster membership.
+        if (defined('Memcached::OPT_CLIENT_MODE') && defined('Memcached::DYNAMIC_CLIENT_MODE')) {
+            $this->options[Memcached::OPT_CLIENT_MODE] = Memcached::DYNAMIC_CLIENT_MODE;
+        }
+
         $this->connection = new Memcached(crc32($this->name));
         $servers = $this->connection->getServerList();
         if (empty($servers)) {
