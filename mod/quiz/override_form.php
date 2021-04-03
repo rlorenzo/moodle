@@ -145,14 +145,14 @@ class quiz_override_form extends moodleform {
                 }
 
                 // Get the list of appropriate users, depending on whether and how groups are used.
-                $userfields = $userfieldsapi->get_sql('u', false, '', 'userid', false)->selects;
-                if ($accessallgroups) {
-                    $users = get_users_by_capability($this->context, 'mod/quiz:attempt',
-                            $userfields, $sort);
-                } else if ($groups = groups_get_activity_allowed_groups($cm)) {
-                    $users = get_users_by_capability($this->context, 'mod/quiz:attempt',
-                            $userfields, $sort, '', '', array_keys($groups));
+                $userfields = $userfieldsapi->get_sql('u', false, '', '', false)->selects;
+                $groupids = 0;
+                if (!$accessallgroups) {
+                    $groups = groups_get_activity_allowed_groups($cm);
+                    $groupids = array_keys($groups);
                 }
+                $users = get_enrolled_users($this->context, 'mod/quiz:attempt',
+                        $groupids, $userfields, $sort);
 
                 // Filter users based on any fixed restrictions (groups, profile).
                 $info = new \core_availability\info_module($cm);
