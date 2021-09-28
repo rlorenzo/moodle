@@ -44,6 +44,11 @@ class remove_unused_questions extends \core\task\scheduled_task {
         global $DB, $CFG;
         require_once($CFG->libdir . '/questionlib.php');
 
+        $tasks = \core\task\manager::get_adhoc_tasks('\core\task\asynchronous_restore_task');
+        if (!empty($tasks)) {
+            mtrace('Pending restore task; skipping remove_unused_questions.');
+        }
+
         // Find potentially unused random questions (up to 10000).
         // Note, because we call question_delete_question below,
         // the question will not actually be deleted if something else
@@ -65,5 +70,17 @@ class remove_unused_questions extends \core\task\scheduled_task {
             $count += 1;
         }
         mtrace('Cleaned up ' . $count . ' unused random questions.');
+
+        $moreusedquestions = $DB->record_exists_sql("
+                SELECT q.id, 1
+                  FROM {question} q
+             LEFT JOIN {quiz_slots} qslots ON q.id = qslots.questionid
+                 WHERE qslots.questionid IS NULL
+                   AND q.qtype = ? AND hidden = ?", ['random', 0]);
+        if ($moreusedquestions) {
+            // Do a recursive call.
+            mtrace('Found more unused random questions; recursing.');
+            $this->execute();
+        }
     }
 }

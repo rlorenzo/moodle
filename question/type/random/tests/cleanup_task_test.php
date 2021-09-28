@@ -67,4 +67,42 @@ class qtype_random_cleanup_task_testcase extends advanced_testcase {
         $this->assertTrue($DB->record_exists('question', ['id' => $quizslots[1]->questionid]));
         $this->assertFalse($DB->record_exists('question', ['id' => $quizslots[2]->questionid]));
     }
+
+    public function test_cleanup_task_removes_many_unused_question() {
+      global $DB;
+      $this->resetAfterTest();
+      $this->setAdminUser();
+
+      $generator = $this->getDataGenerator();
+      $questiongenerator = $generator->get_plugin_generator('core_question');
+      $quizgenerator = $generator->get_plugin_generator('mod_quiz');
+      $cat = $questiongenerator->create_question_category();
+      $quiz = $quizgenerator->create_instance(['course' => SITEID]);
+
+      // Add 10001 random questions, so execute recursion happens.
+      quiz_add_random_questions($quiz, 0, $cat->id, 10001, false);
+      $quizslots = $DB->get_records('quiz_slots', ['quizid' => $quiz->id],
+              'slot', 'slot, id, questionid');
+
+      // Now remove all records from quiz_slots. (Do it manually,
+      // because the API cleans up the random question, but we are trying to
+      // create orphaned random questions.)
+      $DB->delete_records('quiz_slots');
+
+      // Run the scheduled task.
+      $task = new \qtype_random\task\remove_unused_questions();
+      $this->expectOutputRegex('/Found more unused random questions; recursing./');
+      $task->execute();
+
+      // Verify.
+      $this->assertFalse($DB->record_exists('question', ['id' => $quizslots[1]->questionid]));
+      $this->assertFalse($DB->record_exists('question', ['id' => $quizslots[10001]->questionid]));
+
+      // Now check that task does not run if restore task is pending.
+      $asynctask = new \core\task\asynchronous_restore_task();
+      \core\task\manager::queue_adhoc_task($asynctask);
+
+      $this->expectOutputRegex('/Pending restore task; skipping remove_unused_questions./');
+      $task->execute();
+  }
 }
